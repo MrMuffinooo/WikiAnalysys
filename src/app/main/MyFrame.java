@@ -4,6 +4,8 @@ import com.github.lgooddatepicker.components.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 
 public class MyFrame extends JFrame {
 
@@ -50,21 +52,41 @@ public class MyFrame extends JFrame {
         dokladnosc.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         dokladnosc.setBounds(0,50,200,60);
         */
+        JTextField t1 = new JTextField("Search");   //input text
+        t1.setForeground(Color.GRAY);
+        t1.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (t1.getText().equals("Search")) {
+                    t1.setText("");
+                    t1.setForeground(Color.BLACK);
+                }
+            }
 
-        DatePicker dateStart = new DatePicker();
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (t1.getText().isEmpty()) {
+                    t1.setForeground(Color.GRAY);
+                    t1.setText("Search");
+                }
+            }
+        });
+        t1.setBounds(0, 0, 200, 30);
+
+        DatePicker dateStart = new DatePicker();               // wybór okresu
         dateStart.setBounds(0, 50, 200, 30);
 
         DatePicker dateEnd = new DatePicker();
         dateEnd.setBounds(0, 100, 200, 30);
 
-        JTextField t1 = new JTextField("Search");
-        t1.setBounds(0, 0, 200, 30);
+        JButton searchButton = new JButton("Search");         // przycisk szukania
+        searchButton.setBounds(50, 150, 95, 30);
 
         nav.setLayout(null);
         nav.add(t1);
         nav.add(dateStart);
         nav.add(dateEnd);
-        //nav.add(dokladnosc);
+        nav.add(searchButton);
         //----ARTICLE--------------------
 
         //----FOOTER---------------------
