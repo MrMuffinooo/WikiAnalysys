@@ -1,14 +1,15 @@
 package app.main;
 
+import com.github.lgooddatepicker.components.*;
+
 import javax.swing.*;
 import java.awt.*;
 
 public class MyFrame extends JFrame {
 
-    public MyFrame(){
-        //JFrame frame = new JFrame();//creating instance of JFrame
+    public MyFrame() {
 
-        this.setSize(1000,500);
+        this.setSize(1000, 500);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setTitle("Wiki-stat");
         this.setLayout(new BorderLayout());
@@ -23,10 +24,10 @@ public class MyFrame extends JFrame {
         nav.setBackground(Color.orange);
         footer.setBackground(Color.gray);
 
-        header.setPreferredSize(new Dimension(100,100));
-        nav.setPreferredSize(new Dimension(200,100));
-        article.setPreferredSize(new Dimension(100,100));
-        footer.setPreferredSize(new Dimension(100,20));
+        header.setPreferredSize(new Dimension(100, 100));
+        nav.setPreferredSize(new Dimension(200, 100));
+        article.setPreferredSize(new Dimension(100, 100));
+        footer.setPreferredSize(new Dimension(100, 20));
 
         this.add(header, BorderLayout.NORTH);
         this.add(nav, BorderLayout.WEST);
@@ -36,28 +37,34 @@ public class MyFrame extends JFrame {
         //----HEADER---------------------
         JLabel naglowek = new JLabel("HEADER");
 
-        JButton home=new JButton("Home");
-        home.setBounds(50,100,95,30);
+        JButton home = new JButton("Home");
+        home.setBounds(50, 100, 95, 30);
 
         header.add(naglowek);
         header.add(home);
 
         //----NAV------------------------
 
-        String[] items = { "Dzień", "Miesiąc", "Rok"};
+       /* String[] items = { "Dzień", "Miesiąc", "Rok"};
         JList<String> dokladnosc = new JList(items);
         dokladnosc.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         dokladnosc.setBounds(0,50,200,60);
+        */
 
+        DatePicker dateStart = new DatePicker();
+        dateStart.setBounds(0, 50, 200, 30);
 
+        DatePicker dateEnd = new DatePicker();
+        dateEnd.setBounds(0, 100, 200, 30);
 
-
-        JTextField t1=new JTextField("Search");
-        t1.setBounds(0,0, 200,30);
+        JTextField t1 = new JTextField("Search");
+        t1.setBounds(0, 0, 200, 30);
 
         nav.setLayout(null);
         nav.add(t1);
-        nav.add(dokladnosc);
+        nav.add(dateStart);
+        nav.add(dateEnd);
+        //nav.add(dokladnosc);
         //----ARTICLE--------------------
 
         //----FOOTER---------------------
