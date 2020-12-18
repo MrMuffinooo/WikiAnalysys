@@ -11,7 +11,7 @@ import java.io.IOException;
 
 /**
  * Class that generates a world map
- * with series of data on her.
+ * with series of data on it.
  */
 public class SVGMap {
     private static final String path = "world.svg";
@@ -50,9 +50,11 @@ public class SVGMap {
         colorMap("PL", "red");
         colorMap("US", "purple");
         colorMap("CA", "#E6E6FA");
+        colorMap("AE", "rgb(0, 0, 128)");
         jsvgCanvas.setSVGDocument(svgDocument);
         jsvgCanvas.setDocumentState(JSVGCanvas.ALWAYS_INTERACTIVE);
         jsvgCanvas.setEnableRotateInteractor(false);
         return jsvgCanvas;
     }
 }
+
