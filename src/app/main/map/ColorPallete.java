@@ -1,28 +1,34 @@
 package app.main.map;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ColorPallete {
-    List<Double> pallete;
+    private final List<Integer> values;
+    private List<Double> pallete;
 
-    public ColorPallete(List<Double> pallete) {
-        this.pallete = pallete;
-    }
+    public ColorPallete(List<Integer> values) { this.values = values;
+    this.pallete = normalize();}
 
-    private void normalize() {
-        Double max = Collections.max(pallete);
-        Double min = Collections.min(pallete);
-        pallete.forEach(x -> x = ((x - min) / (max - min)));
+    private List<Double> normalize() {
+        Double max = Collections.max(values).doubleValue();
+        Double min = Collections.min(values).doubleValue();
+        return values.stream().map(Integer::doubleValue).map(x -> (x - min) / (max - min)).collect(Collectors.toList());
         //paleta ma wartości z zakresu 0,1
     }
 
-    public List<Double> getPallete() {
-        return pallete;
-    }
-
     public List<String> getRGBcodes(){
-
+        List<String> rgbCodes = new ArrayList<>();
+        normalize();
+        for (Double color : pallete){
+            int r = (int) (color*255);
+            int g = (int) ((1-color)*255);
+            rgbCodes.add("rgb(" + r + "," + g + ",0)");
+        }
+        return rgbCodes;
     }
-
 }
