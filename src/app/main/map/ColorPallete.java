@@ -1,8 +1,6 @@
 package app.main.map;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,7 +25,7 @@ public class ColorPallete {
         for (Double color : pallete){
             int r = (int) (color*255);
             int g = (int) ((1-color)*255);
-            rgbCodes.add("rgb(" + r + "," + g + ",0)");
+            rgbCodes.add("rgb(+" + r +"," + g + ",0)");
         }
         return rgbCodes;
     }
