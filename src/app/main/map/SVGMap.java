@@ -1,7 +1,6 @@
 package app.main.map;
 
 import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
-import org.apache.batik.anim.dom.SVGDOMImplementation;
 import org.apache.batik.bridge.*;
 import org.apache.batik.gvt.GraphicsNode;
 import org.apache.batik.svggen.SVGGraphics2D;
@@ -9,11 +8,8 @@ import org.apache.batik.svggen.SVGGraphics2DIOException;
 import org.apache.batik.swing.JSVGCanvas;
 import org.apache.batik.util.XMLResourceDescriptor;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 import org.w3c.dom.svg.SVGDocument;
-import org.w3c.dom.svg.SVGElement;
-import org.w3c.dom.svg.SVGLocatable;
-import org.w3c.dom.svg.SVGRect;
+import org.w3c.dom.svg.SVGStylable;
 
 import java.io.*;
 import java.util.List;
@@ -57,59 +53,39 @@ public class SVGMap {
     }
 
     private void colorCountry(MapRecord country){
-        Element element = svgDocument.getElementById(country.getId());
-        if (element.hasAttribute("fill"))
-            element.getAttributeNode("fill").setValue(country.getRGBColor());
-        else
-            element.setAttribute("fill", country.getRGBColor());
+        SVGStylable element = (SVGStylable) svgDocument.getElementById(country.getId());
+        element.getStyle().setProperty("fill", country.getRGBColor(),"");
     }
 
     private void addLabels(MapRecord country){
-        Element root = svgDocument.getRootElement();
-        SVGElement element = (SVGElement) svgDocument.getElementById(country.getId());
-        SVGLocatable locatable = (SVGLocatable) element;
-        SVGRect rect = locatable.getBBox(); //znalezienie boxa sciezki
-
-        Element text = svgDocument.createElementNS(SVGDOMImplementation.SVG_NAMESPACE_URI,"text");
-        text.setAttribute("id",country.getId() + "T");
-        text.setAttribute("fill", "blue");
-        text.setAttribute("font-size", "5px");
-        text.setAttribute("x", String.valueOf(rect.getX() +rect.getWidth()/2));
-        text.setAttribute("y", String.valueOf(rect.getY() + rect.getHeight()/2));
-        text.setTextContent(country.getNumberOfExposures().toString());
-        root.appendChild(text);
+//        Element root = svgDocument.getRootElement();
+//        SVGElement element = (SVGElement) svgDocument.getElementById(country.getId());
+//        SVGLocatable locatable = (SVGLocatable) element;
+//        SVGRect rect = locatable.getBBox(); //znalezienie boxa sciezki
+//
+//        Element text = svgDocument.createElementNS(SVGDOMImplementation.SVG_NAMESPACE_URI,"text");
+//        text.setAttribute("id",country.getId() + "T");
+//        text.setAttribute("fill", "blue");
+//        text.setAttribute("font-size", "5px");
+//        text.setAttribute("x", String.valueOf(rect.getX() +rect.getWidth()/2));
+//        text.setAttribute("y", String.valueOf(rect.getY() + rect.getHeight()/2));
+//        text.setTextContent(country.getNumberOfExposures().toString());
+//        root.appendChild(text);
+        Element element = svgDocument.getElementById(country.getId()+ "T");
+        element.setTextContent(country.getNumberOfExposures().toString());
     }
 
     private void prepareMap(){
         for (MapRecord record : records){
-            colorCountry(record);
             addLabels(record);
+            colorCountry(record);
         }
     }
 
-    private void saveMap(){
-        try (OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream("new world.svg"), "UTF-8")){
-            NodeList nodeList = svgDocument.getElementsByTagNameNS(SVGDOMImplementation.SVG_NAMESPACE_URI, "path");
-            Element root = svgDocument.getRootElement();
-            for (int i = 0; i < nodeList.getLength(); i++){
-                Element element = (Element) nodeList.item(i);
-                element.setAttribute("fill", "black");
-
-                SVGLocatable locatable = (SVGLocatable) element;
-                SVGRect rect = locatable.getBBox(); //znalezienie boxa sciezki
-
-                Element text = svgDocument.createElementNS(SVGDOMImplementation.SVG_NAMESPACE_URI,"text");
-                text.setAttribute("id",element.getAttribute("id") + "T");
-                text.setAttribute("fill", "blue");
-                text.setAttribute("font-size", "5px");
-                text.setAttribute("title", element.getAttribute("title"));
-                text.setAttribute("x", String.valueOf(rect.getX() +rect.getWidth()*0.4));
-                text.setAttribute("y", String.valueOf(rect.getY() + rect.getHeight()*0.4));
-                text.setTextContent("");
-                root.appendChild(text);
-            }
+    private void saveMap(String filename){
+        try (OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(filename+".svg"), "UTF-8")){
             SVGGraphics2D graphics2D = new SVGGraphics2D(svgDocument);
-            graphics2D.stream(svgDocument.getDocumentElement(),out, true, true);
+            graphics2D.stream(svgDocument.getDocumentElement(),out, false, true);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (UnsupportedEncodingException e) {
@@ -125,7 +101,7 @@ public class SVGMap {
      * @return object, which can be displayed using Swing.
      */
     public JSVGCanvas getSvgCanvas() {
-        saveMap();
+        prepareMap();
         jsvgCanvas.setDocumentState(JSVGCanvas.ALWAYS_INTERACTIVE);
         jsvgCanvas.setSVGDocument(svgDocument);
         jsvgCanvas.setEnableRotateInteractor(false);
