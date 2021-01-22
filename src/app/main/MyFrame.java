@@ -11,6 +11,7 @@ import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Map;
 
@@ -39,7 +40,7 @@ public class MyFrame extends JFrame {
         nav.setBackground(Color.orange);
         footer.setBackground(Color.gray);
 
-        header.setPreferredSize(new Dimension(100, 100));
+        header.setPreferredSize(new Dimension(100, 80));
         nav.setPreferredSize(new Dimension(200, 100));
         article.setPreferredSize(new Dimension(100, 100));
         footer.setPreferredSize(new Dimension(100, 20));
@@ -50,8 +51,10 @@ public class MyFrame extends JFrame {
         this.add(footer, BorderLayout.SOUTH);
         this.add(article, BorderLayout.CENTER);
 
+
         //----HEADER---------------------
-        JLabel naglowek = new JLabel("WikiStat");
+        JLabel naglowek = new JLabel("Most popular articles in  " + LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + " pl");
+        naglowek.setFont(new Font("SansSerif", Font.BOLD, 48));
 
         //JButton home = new JButton("Home");
         //home.setBounds(50, 100, 95, 30);
@@ -87,6 +90,7 @@ public class MyFrame extends JFrame {
             }
         });
         t1.setBounds(0, 0, 200, 30);
+        t1.setEnabled(false);
 
 
         DateVetoPolicy veto = new DateVetoPolicy() {
@@ -109,6 +113,7 @@ public class MyFrame extends JFrame {
 
         dateSettings1.setVetoPolicy(veto);
         dateSettings2.setVetoPolicy(veto);
+        dateEnd.setEnabled(false);
 
         JTextField domainButt = new JTextField("pl");
         domainButt.setBounds(70, 170, 50, 30);
@@ -121,37 +126,9 @@ public class MyFrame extends JFrame {
 
         JButton showMapButt = new JButton("Map");         // przycisk szukania
         showMapButt.setBounds(130, 170, 60, 30);
+        showMapButt.setEnabled(false);
 
-        searchButton.addActionListener(e -> {
-            String term = t1.getText();
-            LocalDate date = dateStart.getDate();
-            String domainName = domainButt.getText();
 
-            DataImporter.Domain dd;
-            try {
-                dd = DataImporter.Domain.valueOf(domainName);
-            } catch (Exception ex) {
-                domainButt.setText("");
-                domainButt.requestFocus();
-                return;
-            }
-
-            if (term.equals("Search") || term.isEmpty()) {
-                try {
-                    setData(new DataImporter().importTop(dd, date));
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            } else {
-                try {
-                    //setData(new DataImporter().importViews(dd, term, dateFormat.format(date)));
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
-
-            table.repaint();
-        });
 
         showMapButt.addActionListener(e -> {
             JFrame mapa = new JFrame();
@@ -169,6 +146,7 @@ public class MyFrame extends JFrame {
         JList<String> viewNav = new JList<>(listModel);
         viewNav.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         viewNav.setBounds(0, 220, 200, 55);
+        viewNav.setSelectedIndex(0);
 
         viewNav.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
@@ -177,19 +155,16 @@ public class MyFrame extends JFrame {
                     t1.setEnabled(false);
                     dateStart.setEnabled(true);
                     dateEnd.setEnabled(false);
-                    domainButt.setEnabled(true);
                     showMapButt.setEnabled(false);
                 } else if (s.equals("Article popularity in domains")) {
                     t1.setEnabled(true);
                     dateStart.setEnabled(true);
                     dateEnd.setEnabled(true);
-                    domainButt.setEnabled(false);
                     showMapButt.setEnabled(true);
                 } else {
                     t1.setEnabled(true);
                     dateStart.setEnabled(true);
                     dateEnd.setEnabled(true);
-                    domainButt.setEnabled(true);
                     showMapButt.setEnabled(false);
                 }
             }
@@ -239,6 +214,52 @@ public class MyFrame extends JFrame {
 
         footer.add(stopka);
         this.setVisible(true);
+
+        /////////////////////////////////////////////////
+        searchButton.addActionListener(e -> {
+            String term = t1.getText();
+            LocalDate dateS = dateStart.getDate();
+            LocalDate dateE = dateEnd.getDate();
+            String domainName = domainButt.getText();
+            int s = viewNav.getSelectedIndex();
+
+            DataImporter.Domain dd;
+            try {
+                dd = DataImporter.Domain.valueOf(domainName);
+            } catch (Exception ex) {
+                domainButt.setText("");
+                domainButt.requestFocus();
+                return;
+            }
+
+            if (s == 0) {
+                try {
+                    setData(new DataImporter().importTop(dd, dateS));
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+
+            } else if (s == 1) {
+                try {
+                    setData(new DataImporter().importViewsByDomain(dd, term, dateS, dateE)); //TODO cos nie dziala z pl
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+
+
+            if (term.equals("Search") || term.isEmpty()) {
+
+            } else {
+                try {
+                    //setData(new DataImporter().importViews(dd, term, dateFormat.format(date)));
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+
+            table.repaint();
+        });
     }
 
 
@@ -256,4 +277,5 @@ public class MyFrame extends JFrame {
             }
         }
     }
+
 }
