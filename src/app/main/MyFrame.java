@@ -7,12 +7,16 @@ import javax.sql.rowset.serial.SerialArray;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.lang.reflect.Array;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
@@ -53,13 +57,13 @@ public class MyFrame extends JFrame {
         this.add(article, BorderLayout.CENTER);
 
         //----HEADER---------------------
-        JLabel naglowek = new JLabel("HEADER");
+        JLabel naglowek = new JLabel("WikiStat");
 
-        JButton home = new JButton("Home");
-        home.setBounds(50, 100, 95, 30);
+        //JButton home = new JButton("Home");
+        //home.setBounds(50, 100, 95, 30);
 
         header.add(naglowek);
-        header.add(home);
+        //header.add(home);
 
         //----NAV------------------------
 
@@ -92,17 +96,26 @@ public class MyFrame extends JFrame {
 
         DatePicker dateStart = new DatePicker();               // wybór okresu
         dateStart.setBounds(0, 50, 200, 30);
+        dateStart.setDate(LocalDate.now().minusDays(1));
 
-        DatePicker dateEnd = new DatePicker();
-        dateEnd.setBounds(0, 100, 200, 30);
+        JTextField domain = new JTextField("pl");
+        domain.setBounds(50, 150, 50, 30);
+
+        JLabel d = new JLabel("Domena");
 
         JButton searchButton = new JButton("Search");         // przycisk szukania
-        searchButton.setBounds(50, 150, 95, 30);
+        searchButton.setBounds(50, 100, 95, 30);
+
+        searchButton.addActionListener(e -> {
+            String term = t1.getText();
+            LocalDate date = dateStart.getDate();
+
+        });
 
         nav.setLayout(null);
         nav.add(t1);
         nav.add(dateStart);
-        nav.add(dateEnd);// oddzielny kalendarz do danych
+        nav.add(domain);
         nav.add(searchButton);
 
         //----ARTICLE--------------------
