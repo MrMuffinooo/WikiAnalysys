@@ -1,24 +1,16 @@
 package app.main;
 
 import DataImport.DataImporter;
-import com.github.lgooddatepicker.components.*;
+import app.main.map.SVGMap;
+import com.github.lgooddatepicker.components.DatePicker;
 
-import javax.sql.rowset.serial.SerialArray;
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.lang.reflect.Array;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.Period;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
 
@@ -28,6 +20,7 @@ public class MyFrame extends JFrame {
 
     public static String[] ColNames = {"No", "Article", "Views"};
     private String[][] data = new String[1000][4];
+    JTable table = new JTable(data, ColNames);
 
     public MyFrame() {
 
@@ -98,35 +91,78 @@ public class MyFrame extends JFrame {
         dateStart.setBounds(0, 50, 200, 30);
         dateStart.setDate(LocalDate.now().minusDays(1));
 
-        JTextField domain = new JTextField("pl");
-        domain.setBounds(50, 150, 50, 30);
+        DatePicker dateEnd = new DatePicker();               // wybór okresu
+        dateEnd.setBounds(0, 90, 200, 30);
+        dateEnd.setDate(LocalDate.now().minusDays(1));
 
-        JLabel d = new JLabel("Domena");
+        JTextField domainButt = new JTextField("pl");
+        domainButt.setBounds(70, 170, 50, 30);
+
+        JLabel d = new JLabel("Domena:");
+        d.setBounds(10, 170, 50, 30);
 
         JButton searchButton = new JButton("Search");         // przycisk szukania
-        searchButton.setBounds(50, 100, 95, 30);
+        searchButton.setBounds(50, 130, 95, 30);
+
+        JButton showMapButt = new JButton("Map");         // przycisk szukania
+        showMapButt.setBounds(130, 170, 60, 30);
 
         searchButton.addActionListener(e -> {
             String term = t1.getText();
             LocalDate date = dateStart.getDate();
+            String domainName = domainButt.getText();
 
+            DataImporter.Domain dd;
+            try {
+                dd = DataImporter.Domain.valueOf(domainName);
+            } catch (Exception ex) {
+                domainButt.setText("");
+                domainButt.requestFocus();
+                return;
+            }
+
+            if (term == "Search" || term == "") {
+                try {
+                    setData(new DataImporter().importTop(dd, date));
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            } else {
+                try {
+                    //setData(new DataImporter().importViews(dd, term, dateFormat.format(date)));
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+
+            table.repaint();
+        });
+
+        showMapButt.addActionListener(e -> {
+            JFrame mapa = new JFrame();
+            mapa.add(new SVGMap().getSvgCanvas());
+            mapa.setVisible(true);
+            mapa.setSize(1010, 666);
         });
 
         nav.setLayout(null);
         nav.add(t1);
         nav.add(dateStart);
-        nav.add(domain);
+        nav.add(dateEnd);
+        nav.add(domainButt);
+        nav.add(d);
+        nav.add(showMapButt);
         nav.add(searchButton);
 
         //----ARTICLE--------------------
         Date yesterday = new Date(System.currentTimeMillis() - 1000L * 60L * 60L * 24L); //wczoraj
         try {
-            setData(new DataImporter().importTop(DataImporter.Domain.pl, dateFormat.format(yesterday)));
+            setData(new DataImporter().importTop(DataImporter.Domain.pl, LocalDate.now().minusDays(1)));
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        JTable table = new JTable(data, ColNames);
+
 
 
         table.getColumnModel().getColumn(0).setPreferredWidth(25);
@@ -152,6 +188,9 @@ public class MyFrame extends JFrame {
 
         footer.add(stopka);
         this.setVisible(true);
+
+
+        Map ViewsByDomain = new DataImporter().importViewsByDomain(DataImporter.Domain.pl, "Donald Trump", LocalDate.now().minusDays(1));
     }
 
 
