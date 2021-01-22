@@ -113,7 +113,7 @@ public class MyFrame extends JFrame {
         JTextField domainButt = new JTextField("pl");
         domainButt.setBounds(70, 170, 50, 30);
 
-        JLabel d = new JLabel("Domena:");
+        JLabel d = new JLabel("Domain:");
         d.setBounds(10, 170, 50, 30);
 
         JButton searchButton = new JButton("Search");         // przycisk szukania
@@ -160,6 +160,41 @@ public class MyFrame extends JFrame {
             mapa.setSize(1010, 666);
         });
 
+
+        DefaultListModel<String> listModel = new DefaultListModel<>();
+        listModel.addElement("Popular articles in domain");
+        listModel.addElement("Article popularity in domains");
+        listModel.addElement("Article popularity over time");
+
+        JList<String> viewNav = new JList<>(listModel);
+        viewNav.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        viewNav.setBounds(0, 220, 200, 55);
+
+        viewNav.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                String s = viewNav.getSelectedValue();
+                if (s.equals("Popular articles in domain")) {
+                    t1.setEnabled(false);
+                    dateStart.setEnabled(true);
+                    dateEnd.setEnabled(false);
+                    domainButt.setEnabled(true);
+                    showMapButt.setEnabled(false);
+                } else if (s.equals("Article popularity in domains")) {
+                    t1.setEnabled(true);
+                    dateStart.setEnabled(true);
+                    dateEnd.setEnabled(true);
+                    domainButt.setEnabled(false);
+                    showMapButt.setEnabled(true);
+                } else {
+                    t1.setEnabled(true);
+                    dateStart.setEnabled(true);
+                    dateEnd.setEnabled(true);
+                    domainButt.setEnabled(true);
+                    showMapButt.setEnabled(false);
+                }
+            }
+        });
+
         nav.setLayout(null);
         nav.add(t1);
         nav.add(dateStart);
@@ -168,6 +203,7 @@ public class MyFrame extends JFrame {
         nav.add(d);
         nav.add(showMapButt);
         nav.add(searchButton);
+        nav.add(viewNav);
 
         //----ARTICLE--------------------
         Date yesterday = new Date(System.currentTimeMillis() - 1000L * 60L * 60L * 24L); //wczoraj
