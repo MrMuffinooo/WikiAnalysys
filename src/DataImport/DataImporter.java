@@ -112,6 +112,10 @@ public class DataImporter {
         }
         return views; //wyswietlenia artykulu
     }
+    //Dla jednego dnia tylko:
+    public Integer importViews(Domain domain, String article, LocalDate date) {
+        return this.importViews(domain, article, date, date);
+    }
 
     //Zwraca wyswietlenia artykulu we wszystkich domenach.
     public Map importViewsByDomain(Domain domain, String article, LocalDate date, LocalDate date2) { //domena, nazwa artykulu w domenie i data wyswietlen
@@ -124,6 +128,10 @@ public class DataImporter {
             viewsByDomain.put((String) y.getKey(), importViews(Domain.valueOf((String) y.getKey()), (String) y.getValue(), date, date2));
         }
         return viewsByDomain; //Mapa przyporzadkowuje domenom wyswietlenia artykulu.
+    }
+    //Dla jednego dnia tylko:
+    public Map importViewsByDomain(Domain domain, String article, LocalDate date) {
+        return this.importViewsByDomain(domain, article, date, date);
     }
 
     public String importData(String url) {
@@ -191,17 +199,17 @@ public class DataImporter {
         /*Map names = test.importNames(Domain.en, "Star_Wars");
         System.out.println(names);*/
 
-        Map names = test.importViewsByDomain(Domain.en, "Star_Wars", LocalDate.of(2020,12,12), LocalDate.of(2020,12,20));
+        /*Map names = test.importViewsByDomain(Domain.en, "Star_Wars", LocalDate.of(2020,12,12), LocalDate.of(2020,12,20));
         for (Object x : names.entrySet()) {
             Map.Entry y = (Map.Entry) x;
             System.out.println(y.getKey() + " : " + y.getValue());
-        }
+        }*/
 
         /*int views = test.importViews(Domain.pl, "Gwiezdne_wojny", LocalDate.of(2020, 12, 12));
         System.out.println(views);*/
 
-        /*Integer x = test.importViews(Domain.en, "Star_Wars", LocalDate.of(2020,12,12), LocalDate.of(2020, 12,11));
-        System.out.println(x);*/
+        Integer x = test.importViews(Domain.en, "Star_Wars", LocalDate.of(2020,12,12));
+        System.out.println(x);
     }
 
 }
