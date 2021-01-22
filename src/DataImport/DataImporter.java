@@ -8,6 +8,8 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -31,16 +33,17 @@ public class DataImporter {
         ug, uk, ur, uz, vec, vep, ve, vi, vls, vo, war, wa, wo, wuu, xal, xh, xmf, yi, yo, za, zea, zh, zu
     }
 
-    public Map importTop(Domain domain, String date) throws Exception {
+    //Zwraca mapę najpopularniejszych artykulow.
+    public Map importTop(Domain domain, LocalDate date, Boolean monthly) throws Exception { //domena, data dla topki i flaga czy topka miesieczna
 
-        Pattern dateFormat = Pattern.compile("[0-9]{4}\\/[0-9]{2}\\/[0-9]{2}");
-        if (!dateFormat.matcher(date).matches())
-            throw new Exception("Wrong date format. Follow: \"RRRR/MM/DD\". DD=00 - all days");
-
-        date = date.replaceAll("00$", "all-days");
+        String dateStr = "";
+        if (monthly)
+            dateStr = date.format(DateTimeFormatter.ofPattern("yyyy/MM/")) + "all-days";
+        else
+            dateStr = date.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
 
         String jsonStr = importData("https://wikimedia.org/api/rest_v1/metrics/pageviews/top/" + domain +
-                ".wikipedia/all-access/" + date);
+                ".wikipedia/all-access/" + dateStr);
         Map<String, Integer> articles = new LinkedHashMap<>();
         try {
             Map<String,Object> result = new ObjectMapper().readValue(jsonStr, HashMap.class);
@@ -53,10 +56,16 @@ public class DataImporter {
             }
         } catch (Exception e) {
             e.printStackTrace(); }
-        return articles;
+        return articles; //Mapa topki, przyporzadkowuje artykulom wyswietlenia.
     }
 
-    public Map importNames(Domain domain, String article) {
+    //overloading
+    public Map importTop(Domain domain, LocalDate date) throws Exception {
+        return this.importTop(domain, date, false);
+    }
+
+    //Zwraca nazwy artukulow we wszystkich domenach.
+    public Map importNames(Domain domain, String article) { //domena i nazwa artykulu w tej domenie
         String jsonStr = importData("https://www.wikidata.org/w/api.php?action=wbgetentities&sites=" + domain +
                 "wiki&titles=" + article + "&languages=en&format=json");
         Map<String, String> names = new LinkedHashMap<>();
@@ -78,12 +87,14 @@ public class DataImporter {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return names;
+        return names; //Mapa przyporzadkowuje domenom nazwy artykulu.
     }
 
-    public Integer importViews(Domain domain, String article, String date) {
+    //Zwraca wyswietlenia pojedynczego artykulu.
+    public Integer importViews(Domain domain, String article, LocalDate date) { //domena, nazwa artykulu w domenie i data wyswietlen
+        String dateStr = date.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String jsonStr = importData("https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/" + domain +
-                ".wikipedia.org/all-access/all-agents/" + article + "/daily/" + date + "/" + date);
+                ".wikipedia.org/all-access/all-agents/" + article + "/daily/" + dateStr + "/" + dateStr);
         Integer views = null;
         try {
             Map<String,Object> result = new ObjectMapper().readValue(jsonStr, HashMap.class);
@@ -92,40 +103,45 @@ public class DataImporter {
             views = (int) deeper.get("views");
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
-        return views;
+        return views; //wyswietlenia artykulu
     }
 
-    public Map importViewsByDomain(Domain domain, String article, String date) {
+    //Zwraca wyswietlenia artykulu we wszystkich domenach.
+    public Map importViewsByDomain(Domain domain, String article, LocalDate date) { //domena, nazwa artykulu w domenie i data wyswietlen
         Map names = importNames(domain, article);
         Map<String, Integer> viewsByDomain = new LinkedHashMap<>();
         for (Object x : names.entrySet()) {
             Map.Entry y = (Map.Entry) x;
             viewsByDomain.put((String) y.getKey(), importViews(Domain.valueOf((String) y.getKey()), (String) y.getValue(), date));
         }
-        return viewsByDomain;
+        return viewsByDomain; //Mapa przyporzadkowuje domenom wyswietlenia artykulu.
     }
 
     public String importData(String url) {
         return readData(getConnection(url));
     }
 
-    public String getLink(Domain domain, String articleName) {
+    //Zwraca link do danego artykulu.
+    public String getLink(Domain domain, String articleName) { //domena, nazwa artykulu w domenie
         return "https://" + domain + ".wikipedia.org/wiki/" + articleName;
     }
 
     private static HttpURLConnection getConnection ( String line ){
-        URL url = null ;
+        URL url = null;
         try {
             url = new URL ( line );
             } catch ( MalformedURLException e) {
             e.printStackTrace();
+            return null;
         }
-        HttpURLConnection connection = null ;
+        HttpURLConnection connection = null;
         try {
-            connection = ( HttpURLConnection ) url . openConnection();
+            connection = ( HttpURLConnection ) url.openConnection();
             } catch ( Exception e) {
-            e. printStackTrace ();
+            e.printStackTrace ();
+            return null;
             }
         return connection ;
         }
@@ -135,10 +151,11 @@ public class DataImporter {
         try {
             inStream = connection.getInputStream();
             } catch ( Exception e) {
-            e. printStackTrace ();
+            e.printStackTrace();
+            return null;
             }
-        Scanner in = new Scanner( inStream , "UTF-8");
-        StringBuilder sb = new StringBuilder ("");
+        Scanner in = new Scanner( inStream, "UTF-8");
+        StringBuilder sb = new StringBuilder("");
         while (in.hasNext ()) {
             String line = in.next();
             sb.append( line );
@@ -154,7 +171,7 @@ public class DataImporter {
         DataImporter test = new DataImporter();
         /*Map articles = null;
         try {
-            articles = test.importTop(Domain.en, "2020/11/05");
+            articles = test.importTop(Domain.en, LocalDate.of(2020, 11, 5), true);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -167,14 +184,17 @@ public class DataImporter {
         /*Map names = test.importNames(Domain.en, "Star_Wars");
         System.out.println(names);*/
 
-        /*Map names = test.importViewsByDomain(Domain.en, "Star_Wars", "20201212");
+        /*Map names = test.importViewsByDomain(Domain.en, "Star_Wars", LocalDate.of(2020,12,12));
         for (Object x : names.entrySet()) {
             Map.Entry y = (Map.Entry) x;
             System.out.println(y.getKey() + " : " + y.getValue());
         }*/
 
-        /*int views = test.importViews(Domain.pl, "Gwiezdne_wojny", "20201212");
+        /*int views = test.importViews(Domain.pl, "Gwiezdne_wojny", LocalDate.of(2020, 12, 12));
         System.out.println(views);*/
+
+        Integer x = test.importViews(Domain.pl, "hrth", LocalDate.of(2020,12,12));
+        System.out.print(x);
     }
 
 }
