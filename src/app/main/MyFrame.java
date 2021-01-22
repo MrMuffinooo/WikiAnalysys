@@ -3,20 +3,20 @@ package app.main;
 import DataImport.DataImporter;
 import app.main.map.SVGMap;
 import com.github.lgooddatepicker.components.DatePicker;
+import com.github.lgooddatepicker.components.DatePickerSettings;
+import com.github.lgooddatepicker.optionalusertools.DateVetoPolicy;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.Map;
 
 public class MyFrame extends JFrame {
 
-    public static final DateFormat dateFormat = new SimpleDateFormat("YYY/MM/DD");
+    //public Map ViewsByDomain = new DataImporter().importViewsByDomain(DataImporter.Domain.pl, "Donald_Trump", LocalDate.now().minusDays(1));
 
     public static String[] ColNames = {"No", "Article", "Views"};
     private String[][] data = new String[1000][4];
@@ -44,8 +44,9 @@ public class MyFrame extends JFrame {
         article.setPreferredSize(new Dimension(100, 100));
         footer.setPreferredSize(new Dimension(100, 20));
 
-        this.add(header, BorderLayout.NORTH);
+
         this.add(nav, BorderLayout.WEST);
+        this.add(header, BorderLayout.NORTH);
         this.add(footer, BorderLayout.SOUTH);
         this.add(article, BorderLayout.CENTER);
 
@@ -87,18 +88,32 @@ public class MyFrame extends JFrame {
         });
         t1.setBounds(0, 0, 200, 30);
 
-        DatePicker dateStart = new DatePicker();               // wybór okresu
+
+        DateVetoPolicy veto = new DateVetoPolicy() {
+            @Override
+            public boolean isDateAllowed(LocalDate l) {
+                return l.isBefore(LocalDate.now());
+            }
+        };
+
+        DatePickerSettings dateSettings1 = new DatePickerSettings();
+        DatePickerSettings dateSettings2 = new DatePickerSettings();
+
+        DatePicker dateStart = new DatePicker(dateSettings1);               // wybór okresu
         dateStart.setBounds(0, 50, 200, 30);
         dateStart.setDate(LocalDate.now().minusDays(1));
 
-        DatePicker dateEnd = new DatePicker();               // wybór okresu
+        DatePicker dateEnd = new DatePicker(dateSettings2);               // wybór okresu
         dateEnd.setBounds(0, 90, 200, 30);
         dateEnd.setDate(LocalDate.now().minusDays(1));
+
+        dateSettings1.setVetoPolicy(veto);
+        dateSettings2.setVetoPolicy(veto);
 
         JTextField domainButt = new JTextField("pl");
         domainButt.setBounds(70, 170, 50, 30);
 
-        JLabel d = new JLabel("Domena:");
+        JLabel d = new JLabel("Domain:");
         d.setBounds(10, 170, 50, 30);
 
         JButton searchButton = new JButton("Search");         // przycisk szukania
@@ -121,7 +136,7 @@ public class MyFrame extends JFrame {
                 return;
             }
 
-            if (term == "Search" || term == "") {
+            if (term.equals("Search") || term.isEmpty()) {
                 try {
                     setData(new DataImporter().importTop(dd, date));
                 } catch (Exception ex) {
@@ -145,6 +160,41 @@ public class MyFrame extends JFrame {
             mapa.setSize(1010, 666);
         });
 
+
+        DefaultListModel<String> listModel = new DefaultListModel<>();
+        listModel.addElement("Popular articles in domain");
+        listModel.addElement("Article popularity in domains");
+        listModel.addElement("Article popularity over time");
+
+        JList<String> viewNav = new JList<>(listModel);
+        viewNav.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        viewNav.setBounds(0, 220, 200, 55);
+
+        viewNav.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                String s = viewNav.getSelectedValue();
+                if (s.equals("Popular articles in domain")) {
+                    t1.setEnabled(false);
+                    dateStart.setEnabled(true);
+                    dateEnd.setEnabled(false);
+                    domainButt.setEnabled(true);
+                    showMapButt.setEnabled(false);
+                } else if (s.equals("Article popularity in domains")) {
+                    t1.setEnabled(true);
+                    dateStart.setEnabled(true);
+                    dateEnd.setEnabled(true);
+                    domainButt.setEnabled(false);
+                    showMapButt.setEnabled(true);
+                } else {
+                    t1.setEnabled(true);
+                    dateStart.setEnabled(true);
+                    dateEnd.setEnabled(true);
+                    domainButt.setEnabled(true);
+                    showMapButt.setEnabled(false);
+                }
+            }
+        });
+
         nav.setLayout(null);
         nav.add(t1);
         nav.add(dateStart);
@@ -153,6 +203,7 @@ public class MyFrame extends JFrame {
         nav.add(d);
         nav.add(showMapButt);
         nav.add(searchButton);
+        nav.add(viewNav);
 
         //----ARTICLE--------------------
         Date yesterday = new Date(System.currentTimeMillis() - 1000L * 60L * 60L * 24L); //wczoraj
@@ -188,9 +239,6 @@ public class MyFrame extends JFrame {
 
         footer.add(stopka);
         this.setVisible(true);
-
-
-        Map ViewsByDomain = new DataImporter().importViewsByDomain(DataImporter.Domain.pl, "Donald Trump", LocalDate.now().minusDays(1));
     }
 
 
@@ -200,7 +248,7 @@ public class MyFrame extends JFrame {
         Integer i = 0;
         for (Map.Entry<String, Integer> entry : d.entrySet()) {
             data[i][0] = String.valueOf(i + 1);
-            data[i][1] = entry.getKey();
+            data[i][1] = entry.getKey().replaceAll("_", " ");
             data[i][2] = entry.getValue().toString();
             i++;
             if (i == 1000) {
