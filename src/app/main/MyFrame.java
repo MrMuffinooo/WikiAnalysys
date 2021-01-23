@@ -216,7 +216,7 @@ public class MyFrame extends JFrame {
 
         /////////////////////////////////////////////////
         searchButton.addActionListener(e -> {
-            String term = t1.getText();
+            String term = t1.getText().replaceAll(" ", "_");
             LocalDate dateS = dateStart.getDate();
             LocalDate dateE = dateEnd.getDate();
             String domainName = domainButt.getText();
@@ -263,6 +263,8 @@ public class MyFrame extends JFrame {
 
 
     public void setData(Map<String, Integer> d) {
+        if (d.isEmpty())
+            return;
 
         LinkedHashMap<String, Integer> sortedMap = new LinkedHashMap();
 
