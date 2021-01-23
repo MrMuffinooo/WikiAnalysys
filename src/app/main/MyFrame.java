@@ -12,8 +12,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 
 public class MyFrame extends JFrame {
 
@@ -265,9 +264,15 @@ public class MyFrame extends JFrame {
 
     public void setData(Map<String, Integer> d) {
 
+        LinkedHashMap<String, Integer> sortedMap = new LinkedHashMap();
 
+        d.values().removeAll(Collections.singleton(null));
+        d.entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .forEachOrdered(x -> sortedMap.put(x.getKey(), x.getValue()));
         Integer i = 0;
-        for (Map.Entry<String, Integer> entry : d.entrySet()) {
+        for (Map.Entry<String, Integer> entry : sortedMap.entrySet()) {
             data[i][0] = String.valueOf(i + 1);
             data[i][1] = entry.getKey().replaceAll("_", " ");
             data[i][2] = entry.getValue().toString();
