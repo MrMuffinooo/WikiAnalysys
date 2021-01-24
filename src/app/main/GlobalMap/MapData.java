@@ -1,11 +1,12 @@
 package app.main.GlobalMap;
 
-import app.main.DataImport.DataImporter;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
 
-import java.io.*;
-import java.time.LocalDate;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -26,11 +27,11 @@ public class MapData {
     }
 
     private void setNumbers(Map<String, Integer> records){
-        data.forEach(x -> x.setNumberOfExposures(records.get(x.getLanguageDomain())));
+        data.forEach(x -> x.setNumberOfViews(records.get(x.getLanguageDomain())));
     }
 
     private void setColors(){
-        ColorPallete pallete = new ColorPallete(data.stream().map(MapRecord::getNumberOfExposures).collect(Collectors.toList()));
+        ColorPallete pallete = new ColorPallete(data.stream().map(MapRecord::getNumberOfViews).collect(Collectors.toList()));
         List<String> rgbCodes = pallete.getRGBcodes();
         for (int i = 0; i < rgbCodes.size(); i++){
             String color =  rgbCodes.get(i);
@@ -46,18 +47,13 @@ public class MapData {
     public List<MapRecord> getData() {
         return data;
     }
-
-    public static void main(String[] args) {
-        MapData x = new MapData();
-        x.prepareData(new DataImporter().importViewsByDomain(DataImporter.Domain.en, "Han_Solo", LocalDate.of(2020, 10, 24)));
-    }
 }
 
 class MapRecord {
     private String id;
     private String countryName;
     private String languageDomain;
-    private Integer numberOfExposures;
+    private Integer numberOfViews;
     private String rgbColor;
 
     public MapRecord(String id, String countryName, String languageDomain) {
@@ -66,8 +62,8 @@ class MapRecord {
         this.languageDomain = languageDomain;
     }
 
-    public void setNumberOfExposures(Integer numberOfExposures) {
-        this.numberOfExposures = numberOfExposures;
+    public void setNumberOfViews(Integer numberOfViews) {
+        this.numberOfViews = numberOfViews;
     }
 
     public void setRGBColor(String rgbColor) {
@@ -88,8 +84,8 @@ class MapRecord {
 
     public String getLanguageDomain() { return languageDomain; }
 
-    public Integer getNumberOfExposures() {
-        return numberOfExposures;
+    public Integer getNumberOfViews() {
+        return numberOfViews;
     }
 
     @Override
@@ -97,11 +93,11 @@ class MapRecord {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MapRecord mapRecord = (MapRecord) o;
-        return Objects.equals(id, mapRecord.id) && Objects.equals(countryName, mapRecord.countryName) && Objects.equals(numberOfExposures, mapRecord.numberOfExposures) && Objects.equals(rgbColor, mapRecord.rgbColor);
+        return Objects.equals(id, mapRecord.id) && Objects.equals(countryName, mapRecord.countryName) && Objects.equals(numberOfViews, mapRecord.numberOfViews) && Objects.equals(rgbColor, mapRecord.rgbColor);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, countryName, numberOfExposures, rgbColor);
+        return Objects.hash(id, countryName, numberOfViews, rgbColor);
     }
 }
