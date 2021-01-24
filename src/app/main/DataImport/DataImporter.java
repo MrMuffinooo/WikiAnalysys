@@ -1,9 +1,7 @@
-package DataImport;
+package app.main.DataImport;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
-import java.awt.*;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -11,7 +9,6 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.regex.Pattern;
 
 public class DataImporter {
 

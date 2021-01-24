@@ -1,4 +1,4 @@
-package app.main.map;
+package app.main.GlobalMap;
 
 import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
 import org.apache.batik.bridge.*;
@@ -12,7 +12,7 @@ import org.w3c.dom.svg.SVGDocument;
 import org.w3c.dom.svg.SVGStylable;
 
 import java.io.*;
-import java.util.List;
+import java.util.Map;
 
 /**
  * Class that generates a world map
@@ -27,7 +27,7 @@ public class SVGMap {
     private GVTBuilder builder;
     private GraphicsNode rootGN;
     private DocumentLoader loader;
-    private List<MapRecord> records;
+    private MapData records;
 
 
     public SVGMap() {
@@ -44,12 +44,11 @@ public class SVGMap {
         ctx.setDynamicState(BridgeContext.DYNAMIC);
         builder = new GVTBuilder();
         rootGN = builder.build(ctx, svgDocument);
-        records = new MapData(new MapRecord("PL", "Polska", 350),
-                new MapRecord("GB", "Great Britain", 500),
-                new MapRecord("US", "United States", 1000),
-                new MapRecord("DK", "Denmark", 200),
-                new MapRecord("RU", "Russia", 750),
-                new MapRecord("JP", "Japan", 800)).getData();
+        records = new MapData();
+    }
+
+    public void setRecords(Map<String, Integer> data){
+        records.prepareData(data);
     }
 
     private void colorCountry(MapRecord country){
@@ -58,30 +57,24 @@ public class SVGMap {
     }
 
     private void addLabels(MapRecord country){
-//        Element root = svgDocument.getRootElement();
-//        SVGElement element = (SVGElement) svgDocument.getElementById(country.getId());
-//        SVGLocatable locatable = (SVGLocatable) element;
-//        SVGRect rect = locatable.getBBox(); //znalezienie boxa sciezki
-//
-//        Element text = svgDocument.createElementNS(SVGDOMImplementation.SVG_NAMESPACE_URI,"text");
-//        text.setAttribute("id",country.getId() + "T");
-//        text.setAttribute("fill", "blue");
-//        text.setAttribute("font-size", "5px");
-//        text.setAttribute("x", String.valueOf(rect.getX() +rect.getWidth()/2));
-//        text.setAttribute("y", String.valueOf(rect.getY() + rect.getHeight()/2));
-//        text.setTextContent(country.getNumberOfExposures().toString());
-//        root.appendChild(text);
         Element element = svgDocument.getElementById(country.getId()+ "T");
         element.setTextContent(country.getNumberOfExposures().toString());
     }
 
+    /**
+     * Function which colorize map and add labels depend on given data.
+     */
     private void prepareMap(){
-        for (MapRecord record : records){
+        for (MapRecord record : records.getData()){
             addLabels(record);
             colorCountry(record);
         }
     }
 
+    /**
+     * function used to save map to file
+     * @param filename - name of file to save
+     */
     private void saveMap(String filename){
         try (OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(filename+".svg"), "UTF-8")){
             SVGGraphics2D graphics2D = new SVGGraphics2D(svgDocument);
@@ -98,7 +91,7 @@ public class SVGMap {
     }
 
     /**
-     * @return object, which can be displayed using Swing.
+     * @return JComponent
      */
     public JSVGCanvas getSvgCanvas() {
         prepareMap();

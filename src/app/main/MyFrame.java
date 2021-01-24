@@ -1,7 +1,7 @@
 package app.main;
 
-import DataImport.DataImporter;
-import app.main.map.SVGMap;
+import app.main.DataImport.DataImporter;
+import app.main.GlobalMap.SVGMap;
 import com.github.lgooddatepicker.components.DatePicker;
 import com.github.lgooddatepicker.components.DatePickerSettings;
 import com.github.lgooddatepicker.optionalusertools.DateVetoPolicy;
