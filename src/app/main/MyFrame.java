@@ -18,13 +18,25 @@ public class MyFrame extends JFrame {
 
     //public Map ViewsByDomain = new DataImporter().importViewsByDomain(DataImporter.Domain.pl, "Donald_Trump", LocalDate.now().minusDays(1));
 
-    public static String[] ColNames = {"No", "Article", "Views"};
-    private String[][] data = new String[1000][4];
-    JTable table = new JTable(data, ColNames) {
+    Map DataSet;
+
+    MapTableModel TableModel;
+
+    {
+        try {
+            DataSet = new DataImporter().importTop(DataImporter.Domain.pl, LocalDate.now().minusDays(1));
+            TableModel = new MapTableModel(DataSet, "No", "Article", "Views");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    JTable table = new JTable(TableModel) {
         public boolean isCellEditable(int row, int column) {
             return false;
         }
     };
+
 
     public MyFrame() {
 
@@ -180,15 +192,6 @@ public class MyFrame extends JFrame {
         nav.add(viewNav);
 
         //----ARTICLE--------------------
-        Date yesterday = new Date(System.currentTimeMillis() - 1000L * 60L * 60L * 24L); //wczoraj
-        try {
-            setData(new DataImporter().importTop(DataImporter.Domain.pl, LocalDate.now().minusDays(1)));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
-
 
         table.getColumnModel().getColumn(0).setPreferredWidth(25);
         table.getColumnModel().getColumn(1).setPreferredWidth(500);
@@ -196,13 +199,6 @@ public class MyFrame extends JFrame {
         table.setRowHeight(25);
 
         table.setFont(new Font("Calibri", Font.PLAIN, 20));
-        String fonts[] =
-                GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
-
-        for (String font : fonts) {
-            System.out.println(font);
-        }
-
 
         JScrollPane scrollPane = new JScrollPane(table);
         article.add(scrollPane);
@@ -239,7 +235,9 @@ public class MyFrame extends JFrame {
 
             if (s == 0) {
                 try {
-                    setData(new DataImporter().importTop(dd, dateS));
+                    DataSet = new DataImporter().importTop(dd, dateS);
+                    TableModel.setMap(DataSet);
+                    TableModel.setColumnNames("No", "Article", "Views");
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
@@ -252,15 +250,24 @@ public class MyFrame extends JFrame {
                     return;
                 }
                 try {
-                    setData(new DataImporter().importViewsByDomain(dd, term, dateS, dateE)); //TODO cos nie dziala z pl
+                    DataSet.clear();
+                    Map<String, Integer> tempMap = new DataImporter().importViewsByDomain(dd, term, dateS, dateE);
+                    tempMap.values().removeAll(Collections.singleton(null));
+                    tempMap.entrySet()
+                            .stream()
+                            .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                            .forEachOrdered(x -> DataSet.put(x.getKey(), x.getValue()));
+
+                    TableModel.setMap(DataSet); //TODO cos nie dziala z pl znakami
+                    TableModel.setColumnNames("No", "Domain", "Views");
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
                 if (dateS.isEqual(dateE)) {
-                    naglowek.setText("Most popular domains for " + term + " in");
+                    naglowek.setText("Most popular domains for " + term.replaceAll("_", " ") + " in");
                     naglowek2.setText(dateS.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
                 } else {
-                    naglowek.setText("Most popular domains for " + term + " between ");
+                    naglowek.setText("Most popular domains for " + term.replaceAll("_", " ") + " between ");
                     naglowek2.setText(dateS.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + " and " + dateE.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
                 }
             }
@@ -283,15 +290,16 @@ public class MyFrame extends JFrame {
                 .forEachOrdered(x -> sortedMap.put(x.getKey(), x.getValue()));
         Integer i = 0;
 
-        for (Map.Entry<String, Integer> entry : sortedMap.entrySet()) {
+        /*for (Map.Entry<String, Integer> entry : sortedMap.entrySet()) {
             data[i][0] = String.valueOf(i + 1);
             data[i][1] = entry.getKey().replaceAll("_", " ");
             data[i][2] = entry.getValue().toString();
             i++;
             if (i == 1001) {
-                break;
-            }
-        }
+                break;}
+            */
+
+
     }
 
 }
