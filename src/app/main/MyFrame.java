@@ -20,7 +20,11 @@ public class MyFrame extends JFrame {
 
     public static String[] ColNames = {"No", "Article", "Views"};
     private String[][] data = new String[1000][4];
-    JTable table = new JTable(data, ColNames);
+    JTable table = new JTable(data, ColNames) {
+        public boolean isCellEditable(int row, int column) {
+            return false;
+        }
+    };
 
     public MyFrame() {
 
@@ -33,6 +37,9 @@ public class MyFrame extends JFrame {
         JPanel nav = new JPanel();
         JPanel article = new JPanel(new GridLayout());
         JPanel footer = new JPanel();
+
+        //BoxLayout b = new BoxLayout(header, BoxLayout.Y_AXIS);
+        //header.setLayout(b);
 
         article.setBackground(Color.white);
         header.setBackground(Color.yellow);
@@ -52,23 +59,16 @@ public class MyFrame extends JFrame {
 
 
         //----HEADER---------------------
-        JLabel naglowek = new JLabel("Most popular articles in  " + LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + " pl");
-        naglowek.setFont(new Font("SansSerif", Font.BOLD, 48));
-
-        //JButton home = new JButton("Home");
-        //home.setBounds(50, 100, 95, 30);
+        JLabel naglowek = new JLabel("Most popular articles in ");
+        naglowek.setFont(new Font("SansSerif", Font.BOLD, 26));
+        JLabel naglowek2 = new JLabel(LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + " pl");
+        naglowek2.setFont(new Font("SansSerif", Font.BOLD, 26));
 
         header.add(naglowek);
-        //header.add(home);
+        header.add(naglowek2);
 
         //----NAV------------------------
 
-
-       /* String[] items = { "Dzień", "Miesiąc", "Rok"};
-        JList<String> dokladnosc = new JList(items);
-        dokladnosc.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        dokladnosc.setBounds(0,50,200,60);
-        */
         JTextField t1 = new JTextField("Search");   //input text
         t1.setForeground(Color.GRAY);
         t1.addFocusListener(new FocusListener() {
@@ -91,7 +91,7 @@ public class MyFrame extends JFrame {
         t1.setBounds(0, 0, 200, 30);
         t1.setEnabled(false);
 
-
+        ///////////////////////////////////////////
         DateVetoPolicy veto = new DateVetoPolicy() {
             @Override
             public boolean isDateAllowed(LocalDate l) {
@@ -113,6 +113,7 @@ public class MyFrame extends JFrame {
         dateSettings1.setVetoPolicy(veto);
         dateSettings2.setVetoPolicy(veto);
         dateEnd.setEnabled(false);
+        ///////////////////////////////////////////
 
         JTextField domainButt = new JTextField("pl");
         domainButt.setBounds(70, 170, 50, 30);
@@ -128,8 +129,7 @@ public class MyFrame extends JFrame {
         showMapButt.setEnabled(false);
 
 
-
-        showMapButt.addActionListener(e -> {
+        showMapButt.addActionListener(e -> { // nowe okno z mapa
             JFrame mapa = new JFrame();
             mapa.add(new SVGMap().getSvgCanvas());
             mapa.setVisible(true);
@@ -231,29 +231,37 @@ public class MyFrame extends JFrame {
                 return;
             }
 
+            if (dateE.isBefore(dateS)) {
+                dateStart.setText("");
+                dateStart.requestFocus();
+                return;
+            }
+
             if (s == 0) {
                 try {
                     setData(new DataImporter().importTop(dd, dateS));
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
+                naglowek.setText("Most popular articles in ");
+                naglowek2.setText(dateS.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + " " + dd.toString());
 
             } else if (s == 1) {
+                if (term.isEmpty() || term.equals("Search")) {
+                    t1.requestFocus();
+                    return;
+                }
                 try {
                     setData(new DataImporter().importViewsByDomain(dd, term, dateS, dateE)); //TODO cos nie dziala z pl
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
-            }
-
-
-            if (term.equals("Search") || term.isEmpty()) {
-
-            } else {
-                try {
-                    //setData(new DataImporter().importViews(dd, term, dateFormat.format(date)));
-                } catch (Exception ex) {
-                    ex.printStackTrace();
+                if (dateS.isEqual(dateE)) {
+                    naglowek.setText("Most popular domains for " + term + " in");
+                    naglowek2.setText(dateS.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+                } else {
+                    naglowek.setText("Most popular domains for " + term + " between ");
+                    naglowek2.setText(dateS.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + " and " + dateE.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
                 }
             }
 
@@ -274,12 +282,13 @@ public class MyFrame extends JFrame {
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .forEachOrdered(x -> sortedMap.put(x.getKey(), x.getValue()));
         Integer i = 0;
+
         for (Map.Entry<String, Integer> entry : sortedMap.entrySet()) {
             data[i][0] = String.valueOf(i + 1);
             data[i][1] = entry.getKey().replaceAll("_", " ");
             data[i][2] = entry.getValue().toString();
             i++;
-            if (i == 1000) {
+            if (i == 1001) {
                 break;
             }
         }
