@@ -47,6 +47,10 @@ public class SVGMap {
         records = new MapData();
     }
 
+    /**
+     * Function to change data, which will generate map.
+     * @param data map with language_domain as keys and number of views as values
+     */
     public void setRecords(Map<String, Integer> data){
         records.prepareData(data);
     }
@@ -58,7 +62,7 @@ public class SVGMap {
 
     private void addLabels(MapRecord country){
         Element element = svgDocument.getElementById(country.getId()+ "T");
-        element.setTextContent(country.getNumberOfExposures().toString());
+        element.setTextContent(country.getNumberOfViews().toString());
     }
 
     /**
