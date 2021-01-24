@@ -272,7 +272,7 @@ public class MyFrame extends JFrame {
                 }
             }
 
-            table.repaint();
+            TableModel.fireTableDataChanged();
         });
     }
 
