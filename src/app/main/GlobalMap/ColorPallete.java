@@ -18,7 +18,7 @@ public class ColorPallete {
         for (int i = 0; i < values.size(); i++){
             Integer temp = values.get(i);
             if (temp == null)
-                pallete.add(null);
+                pallete.add(-1.0);
             else
                 pallete.add(((double) temp - min)/(max - min));
         }

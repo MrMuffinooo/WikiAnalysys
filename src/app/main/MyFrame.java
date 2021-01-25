@@ -144,10 +144,12 @@ public class MyFrame extends JFrame {
         showMapButt.setBounds(130, 170, 60, 30);
         showMapButt.setEnabled(false);
 
+        SVGMap svgMap = new SVGMap();
 
         showMapButt.addActionListener(e -> { // nowe okno z mapa
             JFrame mapa = new JFrame();
-            mapa.add(new SVGMap().getSvgCanvas());
+            svgMap.setRecords(new DataImporter().importViewsByDomain(DataImporter.Domain.en, "Han_Solo", LocalDate.of(2020, 12, 15)));
+            mapa.add(svgMap.getSvgCanvas());
             mapa.setVisible(true);
             mapa.setSize(1010, 666);
         });

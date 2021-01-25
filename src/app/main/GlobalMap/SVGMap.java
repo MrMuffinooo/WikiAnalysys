@@ -19,7 +19,7 @@ import java.util.Map;
  * with series of data on it.
  */
 public class SVGMap {
-    private static final String path = "world.svg";
+    private static final String path = "resources" + File.separator + "world.svg";
     private SVGDocument svgDocument;
     private JSVGCanvas jsvgCanvas = new JSVGCanvas();
     private UserAgent userAgent;
@@ -62,7 +62,8 @@ public class SVGMap {
 
     private void addLabels(MapRecord country){
         Element element = svgDocument.getElementById(country.getId()+ "T");
-        element.setTextContent(country.getNumberOfViews().toString());
+        if (country.getNumberOfViews() != null)
+            element.setTextContent(country.getNumberOfViews().toString());
     }
 
     /**
