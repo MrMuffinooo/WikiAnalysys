@@ -25,6 +25,13 @@ public class ChartPanel extends JPanel {
         values = vals.toArray(new Integer[0]);
     }
 
+    public void setMap(Map m) {
+        Set<String> keys = m.keySet();
+        Collection<Integer> vals = m.values();
+        names = keys.toArray(new String[keys.size()]);
+        values = vals.toArray(new Integer[0]);
+    }
+
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         if (values == null || values.length == 0)

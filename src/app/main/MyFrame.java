@@ -19,8 +19,6 @@ import java.util.Map;
 
 public class MyFrame extends JFrame {
 
-    //public Map ViewsByDomain = new DataImporter().importViewsByDomain(DataImporter.Domain.pl, "Donald_Trump", LocalDate.now().minusDays(1));
-
     Map DataSet;
 
     MapTableModel TableModel;
@@ -265,11 +263,12 @@ public class MyFrame extends JFrame {
                 try {
                     DataSet = new DataImporter().importTop(dd, dateS);
                     TableModel.setMap(DataSet);
-                    //TableModel.setColumnNames("No", "Article", "Views");
                     table.getColumnModel().getColumn(1).setHeaderValue("Article");
+                    graph.setMap(DataSet);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
+
                 naglowek.setText("Most popular articles in ");
                 naglowek2.setText(dateS.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + " " + dd.toString());
 
@@ -289,7 +288,7 @@ public class MyFrame extends JFrame {
 
                     TableModel.setMap(DataSet); //TODO cos nie dziala z pl znakami
                     table.getColumnModel().getColumn(1).setHeaderValue("Domain");
-                    // TableModel.setColumnNames("No", "Domain", "Views");
+                    graph.setMap(DataSet);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
@@ -302,8 +301,10 @@ public class MyFrame extends JFrame {
                 }
             }
 
-            table.repaint();
-            table.getTableHeader().repaint();
+            //table.repaint();
+            //table.getTableHeader().repaint();
+            //scrollPane.revalidate();
+            scrollPane.repaint();
         });
 
         toggleTable.addActionListener(x -> {
