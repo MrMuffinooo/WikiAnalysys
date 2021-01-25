@@ -203,6 +203,8 @@ public class MyFrame extends JFrame {
         JScrollPane scrollPane = new JScrollPane(table);
         article.add(scrollPane);
 
+        ChartPanel graph = new ChartPanel(DataSet);
+
 
         //----FOOTER---------------------
         JLabel stopka = new JLabel("Adam Frej  Piotr Marciniak  Paweł Niewiadowski \u00a9");
@@ -237,7 +239,8 @@ public class MyFrame extends JFrame {
                 try {
                     DataSet = new DataImporter().importTop(dd, dateS);
                     TableModel.setMap(DataSet);
-                    TableModel.setColumnNames("No", "Article", "Views");
+                    //TableModel.setColumnNames("No", "Article", "Views");
+                    table.getColumnModel().getColumn(1).setHeaderValue("Article");
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
@@ -259,7 +262,8 @@ public class MyFrame extends JFrame {
                             .forEachOrdered(x -> DataSet.put(x.getKey(), x.getValue()));
 
                     TableModel.setMap(DataSet); //TODO cos nie dziala z pl znakami
-                    TableModel.setColumnNames("No", "Domain", "Views");
+                    table.getColumnModel().getColumn(1).setHeaderValue("Domain");
+                    // TableModel.setColumnNames("No", "Domain", "Views");
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
@@ -272,11 +276,12 @@ public class MyFrame extends JFrame {
                 }
             }
 
-            TableModel.fireTableDataChanged();
+            table.repaint();
+            table.getTableHeader().repaint();
         });
     }
 
-
+/*
     public void setData(Map<String, Integer> d) {
         if (d.isEmpty())
             return;
@@ -297,9 +302,9 @@ public class MyFrame extends JFrame {
             i++;
             if (i == 1001) {
                 break;}
-            */
 
 
-    }
+
+    }*/
 
 }
