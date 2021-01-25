@@ -17,7 +17,7 @@ public class DataImporter {
 
     public DataImporter() {}
 
-    public enum Domain {
+    /*public enum Domain { //old
         aa, ab, ace, ady, af, ak, als, am, ang, an, arc, ar, ary, arz, ast, as, atj, avk, av, awa, ay, azb, az, ban, bar,
         bat_smg, ba, bcl, be, bg, bh, bi, bjn, bm, bn, bo, bpy, br, bs, bug, bxr, ca, cbk_zam, cdo, ceb, ce, cho,
         chr, ch, chy, ckb, co, commons, crh, cr, csb, cs, cu, cv, cy, da, de, din, diq, dsb, dty, dv, dz, ee, el, eml, en,
@@ -31,6 +31,12 @@ public class DataImporter {
         sco, sc, sd, se, sg, shn, sh, simple, si, skr, sk, sl, smn, sm, sn, sources, so, species, sq, srn, sr, ss, stq,
         st, su, sv, sw, szl, szy, ta, tcy, tet, te, tg, th, ti, tk, tl, tn, to, tpi, tr, ts, tt, tum, tw, tyv, ty, udm,
         ug, uk, ur, uz, vec, vep, ve, vi, vls, vo, war, wa, wo, wuu, xal, xh, xmf, yi, yo, za, zea, zh, zu
+    }*/
+    public enum Domain {
+        ar,	ary,	az,	be,	bg,	bn,	bs,	ca,	cs,	da,	de,	dv,	dz,	el,	en,	es,	et,	fa,	fi,	fj,	fr,	gn,	he,	hi,	hr,	ht,	hu,
+        hy,	id,	is,	it,	ja,	ka,	kk,	km,	ko,	ky,	lb,	lo,	lt,	lv,	mg,	mk,	mn,	ms,	mt,	my,	na,	ne,	nl,	no,	ny,	om,	pl,	ps,
+        pt,	rn,	ro,	ru,	rw,	si,	sk,	sl,	sn,	so,	sq,	sr,	ss,	st,	sv,	sw,	tg,	th,	ti,	tk,	tl,	tn,	tpi,	tr,	uk,	ur,	uz,
+        vi,	zh,	zu
     }
 
     //Zwraca mapę najpopularniejszych artykulow.
@@ -82,7 +88,7 @@ public class DataImporter {
                 if (key.endsWith("wiki")) {
                     key = key.replaceAll("wiki$", "");
                     //System.out.println(key);
-                    if (EnumUtils.isValidEnum(Domain.class, key) && !key.contains("_") && !key.contains("commons") && !key.contains("new") && !key.contains("skr")) { // skr nie dziala (bo arabskie?)
+                    if (EnumUtils.isValidEnum(Domain.class, key)) {
                         Map value = (Map) element.getValue();
                         names.put(key, (String) value.get("title"));
                     }
@@ -143,7 +149,9 @@ public class DataImporter {
         }
         return viewsByDomain; //Mapa przyporzadkowuje domenom listy wyswietlen artykulu.
     }
-    public Map importViewsByDomain(Domain domain, String article, LocalDate date, LocalDate date2) {
+
+    //Zwraca sumaryczne wyswietlenia artykulu we wszystkich domenach, w zakresie dat.
+    public Map importViewsByDomain(Domain domain, String article, LocalDate date, LocalDate date2) { //domena, nazwa artykulu w domenie i zakres dat wyswietlen
         if (date.isAfter(date2))
             return null;
         Map viewsByDomain = this.importViewsByDomainDays(domain, article, date, date2);
@@ -153,7 +161,7 @@ public class DataImporter {
             List<Integer> value = (List) y.getValue();
             viewsByDomainSum.put((String) y.getKey(), value.stream().mapToInt(Integer::intValue).sum());
         }
-        return viewsByDomainSum;
+        return viewsByDomainSum; //Mapa przyporzadkowuje domenom sumaryczne wyswietlena artykulu.
     }
 
     //Dla jednego dnia tylko:
