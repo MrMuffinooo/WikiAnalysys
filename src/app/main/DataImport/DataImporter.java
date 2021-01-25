@@ -10,6 +10,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import static java.time.temporal.ChronoUnit.DAYS;
+
 public class DataImporter {
 
     public DataImporter() {}
@@ -52,7 +54,8 @@ public class DataImporter {
                 articles.put((String) element.get("article"), (Integer) element.get("views"));
             }
         } catch (Exception e) {
-            e.printStackTrace(); }
+            //e.printStackTrace();
+        }
         return articles; //Mapa topki, przyporzadkowuje artykulom wyswietlenia.
     }
 
@@ -82,49 +85,59 @@ public class DataImporter {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         return names; //Mapa przyporzadkowuje domenom nazwy artykulu.
     }
 
-    //Zwraca wyswietlenia pojedynczego artykulu.
-    public Integer importViews(Domain domain, String article, LocalDate date, LocalDate date2) { //domena, nazwa artykulu w domenie i data wyswietlen
+    //Zwraca wyswietlenia pojedynczego artykulu dla zakresu dat.
+    public List<Integer> importViews(Domain domain, String article, LocalDate date, LocalDate date2) { //domena, nazwa artykulu w domenie i zakres dat wyswietlen
         if (date.isAfter(date2))
-            return null;
+            return Collections.singletonList(-1);
+        long days = DAYS.between(date, date2);
         String dateStr = date.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String dateStr2 = date2.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String jsonStr = importData("https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/" + domain +
                 ".wikipedia.org/all-access/all-agents/" + article + "/daily/" + dateStr + "/" + dateStr2);
-        Integer views = 0;
+        if (jsonStr == null) {
+            return new ArrayList(Collections.nCopies((int)days, 0));
+        }
+        List<Integer> views = new ArrayList<>();
         try {
             Map<String,Object> result = new ObjectMapper().readValue(jsonStr, HashMap.class);
             ArrayList items = (ArrayList) result.get("items");
             for (int i = 0; i < items.size(); i++) {
                 Map deeper = (Map) items.get(i);
-                views = views + (int) deeper.get("views");
+                String time = (String) deeper.get("timestamp");
+                while (!time.equals(date.format(DateTimeFormatter.ofPattern("yyyyMMdd00")))) {
+                    date = date.plusDays(1);
+                    views.add(0);
+                }
+                views.add((int) deeper.get("views"));
+                date = date.plusDays(1);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             return null;
         }
-        return views; //wyswietlenia artykulu
+        return views; //lista wyswietlen artykulu
     }
     //Dla jednego dnia tylko:
-    public Integer importViews(Domain domain, String article, LocalDate date) {
+    public List<Integer> importViews(Domain domain, String article, LocalDate date) {
         return this.importViews(domain, article, date, date);
     }
 
-    //Zwraca wyswietlenia artykulu we wszystkich domenach.
-    public Map importViewsByDomain(Domain domain, String article, LocalDate date, LocalDate date2) { //domena, nazwa artykulu w domenie i data wyswietlen
+    //Zwraca wyswietlenia artykulu we wszystkich domenach, w zakresie dat.
+    public Map importViewsByDomain(Domain domain, String article, LocalDate date, LocalDate date2) { //domena, nazwa artykulu w domenie i zakres dat wyswietlen
         if (date.isAfter(date2))
             return null;
         Map names = importNames(domain, article);
-        Map<String, Integer> viewsByDomain = new LinkedHashMap<>();
+        Map<String, List> viewsByDomain = new LinkedHashMap<>();
         for (Object x : names.entrySet()) {
             Map.Entry y = (Map.Entry) x;
             viewsByDomain.put((String) y.getKey(), importViews(Domain.valueOf((String) y.getKey()), (String) y.getValue(), date, date2));
         }
-        return viewsByDomain; //Mapa przyporzadkowuje domenom wyswietlenia artykulu.
+        return viewsByDomain; //Mapa przyporzadkowuje domenom listy wyswietlen artykulu.
     }
     //Dla jednego dnia tylko:
     public Map importViewsByDomain(Domain domain, String article, LocalDate date) {
@@ -133,7 +146,7 @@ public class DataImporter {
 
     public String importData(String url) {
         return readData(getConnection(url));
-    }
+    } //zwraca null dla blednego url
 
     //Zwraca link do danego artykulu.
     public String getLink(Domain domain, String articleName) { //domena, nazwa artykulu w domenie
@@ -145,25 +158,26 @@ public class DataImporter {
         try {
             url = new URL ( line );
             } catch ( MalformedURLException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             return null;
         }
         HttpURLConnection connection = null;
         try {
             connection = ( HttpURLConnection ) url.openConnection();
             } catch ( Exception e) {
-            e.printStackTrace ();
+            //e.printStackTrace ();
             return null;
             }
         return connection ;
         }
 
     private static String readData ( HttpURLConnection connection ){
-        InputStream inStream = null ;
+        if (connection == null) return null;
+        InputStream inStream = null;
         try {
             inStream = connection.getInputStream();
             } catch ( Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             return null;
             }
         Scanner in = new Scanner( inStream, "UTF-8");
@@ -196,17 +210,22 @@ public class DataImporter {
         /*Map names = test.importNames(Domain.en, "Star_Wars");
         System.out.println(names);*/
 
-        /*Map names = test.importViewsByDomain(Domain.en, "Star_Wars", LocalDate.of(2020,12,12), LocalDate.of(2020,12,20));
-        for (Object x : names.entrySet()) {
+        Map views = test.importViewsByDomain(Domain.en, "Star_Wars", LocalDate.of(2020,12,12), LocalDate.of(2020,12,20));
+        //Map names = test.importNames(Domain.en, "Star_Wars");
+        for (Object x : views.entrySet()) {
             Map.Entry y = (Map.Entry) x;
             System.out.println(y.getKey() + " : " + y.getValue());
+        }
+        /*for (Object x : names.entrySet()) {
+            Map.Entry y = (Map.Entry) x;
+            System.out.println(test.getLink(Domain.valueOf((String)y.getKey()), (String) y.getValue()));
         }*/
 
         /*int views = test.importViews(Domain.pl, "Gwiezdne_wojny", LocalDate.of(2020, 12, 12));
         System.out.println(views);*/
 
-        Integer x = test.importViews(Domain.en, "Star_Wars", LocalDate.of(2020,12,12));
-        System.out.println(x);
+        /*List x = test.importViews(Domain.en, "Star_Wars", LocalDate.of(2020,12,12), LocalDate.of(2020, 12, 15));
+        System.out.println(x);*/
     }
 
 }
