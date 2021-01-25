@@ -1,5 +1,6 @@
 package app.main.DataImport;
 
+import org.apache.commons.lang3.EnumUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.InputStream;
@@ -54,7 +55,7 @@ public class DataImporter {
                 articles.put((String) element.get("article"), (Integer) element.get("views"));
             }
         } catch (Exception e) {
-            //e.printStackTrace();
+            e.printStackTrace();
         }
         return articles; //Mapa topki, przyporzadkowuje artykulom wyswietlenia.
     }
@@ -78,14 +79,17 @@ public class DataImporter {
             for (Object x : deeper.entrySet()) {
                 Map.Entry element = (Map.Entry) x;
                 String key = (String)element.getKey();
-                if (key.endsWith("wiki") && !key.contains("_") && !key.contains("commons") && !key.contains("new") && !key.contains("skr")) { // skr nie dziala (bo arabskie?)
+                if (key.endsWith("wiki")) {
                     key = key.replaceAll("wiki$", "");
-                    Map value = (Map) element.getValue();
-                    names.put(key, (String) value.get("title"));
+                    System.out.println(key);
+                    if (EnumUtils.isValidEnum(Domain.class, key) && !key.contains("_") && !key.contains("commons") && !key.contains("new") && !key.contains("skr")) { // skr nie dziala (bo arabskie?)
+                        Map value = (Map) element.getValue();
+                        names.put(key, (String) value.get("title"));
+                    }
                 }
             }
         } catch (Exception e) {
-            //e.printStackTrace();
+            e.printStackTrace();
         }
         return names; //Mapa przyporzadkowuje domenom nazwy artykulu.
     }
@@ -117,7 +121,7 @@ public class DataImporter {
                 date = date.plusDays(1);
             }
         } catch (Exception e) {
-            //e.printStackTrace();
+            e.printStackTrace();
             return null;
         }
         return views; //lista wyswietlen artykulu
@@ -158,14 +162,14 @@ public class DataImporter {
         try {
             url = new URL ( line );
             } catch ( MalformedURLException e) {
-            //e.printStackTrace();
+            e.printStackTrace();
             return null;
         }
         HttpURLConnection connection = null;
         try {
             connection = ( HttpURLConnection ) url.openConnection();
             } catch ( Exception e) {
-            //e.printStackTrace ();
+            e.printStackTrace ();
             return null;
             }
         return connection ;
@@ -177,7 +181,7 @@ public class DataImporter {
         try {
             inStream = connection.getInputStream();
             } catch ( Exception e) {
-            //e.printStackTrace();
+            e.printStackTrace();
             return null;
             }
         Scanner in = new Scanner( inStream, "UTF-8");
@@ -210,7 +214,7 @@ public class DataImporter {
         /*Map names = test.importNames(Domain.en, "Star_Wars");
         System.out.println(names);*/
 
-        Map views = test.importViewsByDomain(Domain.en, "Star_Wars", LocalDate.of(2020,12,12), LocalDate.of(2020,12,20));
+        Map views = test.importViewsByDomain(Domain.en, "Main_Page", LocalDate.of(2020,12,12), LocalDate.of(2020,12,20));
         //Map names = test.importNames(Domain.en, "Star_Wars");
         for (Object x : views.entrySet()) {
             Map.Entry y = (Map.Entry) x;
@@ -224,7 +228,7 @@ public class DataImporter {
         /*int views = test.importViews(Domain.pl, "Gwiezdne_wojny", LocalDate.of(2020, 12, 12));
         System.out.println(views);*/
 
-        /*List x = test.importViews(Domain.en, "Star_Wars", LocalDate.of(2020,12,12), LocalDate.of(2020, 12, 15));
+        /*List x = test.importViews(Domain.en, "Main_Page", LocalDate.of(2020,12,12), LocalDate.of(2020, 12, 15));
         System.out.println(x);*/
     }
 
