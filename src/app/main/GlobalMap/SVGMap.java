@@ -9,6 +9,8 @@ import org.apache.batik.swing.JSVGCanvas;
 import org.apache.batik.util.XMLResourceDescriptor;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.events.EventListener;
+import org.w3c.dom.events.EventTarget;
 import org.w3c.dom.svg.SVGDocument;
 import org.w3c.dom.svg.SVGStylable;
 
@@ -79,12 +81,18 @@ public class SVGMap {
 
             Element scale = createRect();
             root.appendChild(scale);
+            Element minText = createText("min","8", "9", min.toString());
+            Element maxText = createText("max","190", "9", max.toString());
+            root.appendChild(minText);
+            root.appendChild(maxText);
+        }
+        else{
+            Element minText = svgDocument.getElementById("min");
+            minText.setTextContent(min.toString());
+            Element maxText = svgDocument.getElementById("max");
+            maxText.setTextContent(max.toString());
         }
 
-        Element minText = createText("8", "9", min.toString());
-        Element maxText = createText("190", "9", max.toString());
-        root.appendChild(minText);
-        root.appendChild(maxText);
     }
 
     private Element createRect() {
@@ -123,13 +131,29 @@ public class SVGMap {
         return stop;
     }
 
-    private Element createText(String x, String y, String value){
+    private Element createText(String id, String x, String y, String value){
         Element text = svgDocument.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("id", id);
         text.setAttribute("x", x);
         text.setAttribute("y", y);
         text.setTextContent(value);
         return text;
     }
+
+    private void addCountryName(MapRecord country){
+        Element text = svgDocument.getElementById(country.getId()+"T");
+        EventTarget target = (EventTarget) text;
+        target.addEventListener("hover",
+                (EventListener) evt -> {
+                    Element element = (Element) evt.getCurrentTarget();
+                    if (element.getTextContent().equals(country.getCountryName()))
+                        element.setTextContent(country.getCountryName());
+                    else
+                        element.setTextContent(country.getNumberOfViews().toString());
+                }, true);
+    }
+
+
 
     /**
      * Function which colorize map and add labels depend on given data.
@@ -140,6 +164,7 @@ public class SVGMap {
         for (MapRecord record : records.getData()){
             addLabels(record);
             colorCountry(record);
+            addCountryName(record);
 
             if (record.getNumberOfViews() != null){
                 if (min > record.getNumberOfViews())
