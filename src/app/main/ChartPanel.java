@@ -57,15 +57,19 @@ public class ChartPanel extends JPanel {
         g.setFont(labelFont);
 
         int valueX = leftBarStart;
+
+        g.setColor(Color.black);
+        for (int i = 0; i < values.length; i++) {
+            g.drawLine(0, i * barWidth, clientWidth, i * barWidth);
+        }
         for (int i = 0; i < values.length; i++) {
             int valueY = i * (barWidth);
             int height = (int) (values[i] * scale);
 
-            g.setColor(Color.black);
-            g.drawLine(0, i * barWidth, clientWidth, i * barWidth);
-            g.setColor(new Color(0, 159, 183, 100));
+
+            g.setColor(new Color(214, 213, 111));
             g.fillRect(valueX, valueY, height, barWidth);
-            g.setColor(new Color(0, 159, 183));
+            g.setColor(new Color(84, 81, 0));
             g.drawRect(valueX, valueY, height, barWidth);
             g.setColor(Color.black);
 
