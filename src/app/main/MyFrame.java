@@ -55,10 +55,10 @@ public class MyFrame extends JFrame {
         //BoxLayout b = new BoxLayout(header, BoxLayout.Y_AXIS);
         //header.setLayout(b);
 
-        article.setBackground(Color.white);
-        header.setBackground(Color.yellow);
-        nav.setBackground(Color.orange);
-        footer.setBackground(Color.gray);
+        article.setBackground(new Color(255, 252, 249));
+        header.setBackground(new Color(223, 160, 110));
+        nav.setBackground(new Color(245, 243, 187));
+        footer.setBackground(new Color(65, 39, 34));
 
         header.setPreferredSize(new Dimension(100, 80));
         nav.setPreferredSize(new Dimension(200, 100));
@@ -232,7 +232,7 @@ public class MyFrame extends JFrame {
 
         //----FOOTER---------------------
         JLabel stopka = new JLabel("Adam Frej  Piotr Marciniak  Paweł Niewiadowski \u00a9");
-
+        stopka.setForeground(Color.WHITE);
         footer.add(stopka);
         this.setVisible(true);
 
