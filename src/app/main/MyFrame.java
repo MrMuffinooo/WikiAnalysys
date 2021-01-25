@@ -148,7 +148,7 @@ public class MyFrame extends JFrame {
 
         showMapButt.addActionListener(e -> { // nowe okno z mapa
             JFrame mapa = new JFrame();
-            svgMap.setRecords(new DataImporter().importViewsByDomain(DataImporter.Domain.en, "Han_Solo", LocalDate.of(2020, 12, 15)));
+            svgMap.setRecords(DataSet);
             mapa.add(svgMap.getSvgCanvas());
             mapa.setVisible(true);
             mapa.setSize(1010, 666);
