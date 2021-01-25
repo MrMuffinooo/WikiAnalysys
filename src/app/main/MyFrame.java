@@ -10,9 +10,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.io.File;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Map;
 
 public class MyFrame extends JFrame {
 
@@ -44,6 +47,7 @@ public class MyFrame extends JFrame {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setTitle("Wiki-stat");
         this.setLayout(new BorderLayout());
+        this.setIconImage(new ImageIcon("resources/logo.png").getImage());
 
         JPanel header = new JPanel();
         JPanel nav = new JPanel();
@@ -181,6 +185,19 @@ public class MyFrame extends JFrame {
             }
         });
 
+        JToggleButton toggleTable = new JToggleButton();
+        JToggleButton toggleGraph = new JToggleButton();
+        toggleTable.setBounds(50, 300, 50, 50);
+        toggleGraph.setBounds(100, 300, 50, 50);
+        toggleTable.setMargin(new Insets(0, 0, 0, 0));
+        toggleGraph.setMargin(new Insets(0, 0, 0, 0));
+
+        toggleGraph.setIcon(new ImageIcon("resources" + File.separator + "graphico.png"));
+        toggleTable.setIcon(new ImageIcon("resources" + File.separator + "tableico.png"));
+
+        toggleTable.setSelected(true);
+
+
         nav.setLayout(null);
         nav.add(t1);
         nav.add(dateStart);
@@ -190,6 +207,8 @@ public class MyFrame extends JFrame {
         nav.add(showMapButt);
         nav.add(searchButton);
         nav.add(viewNav);
+        nav.add(toggleGraph);
+        nav.add(toggleTable);
 
         //----ARTICLE--------------------
 
@@ -201,9 +220,14 @@ public class MyFrame extends JFrame {
         table.setFont(new Font("Calibri", Font.PLAIN, 20));
 
         JScrollPane scrollPane = new JScrollPane(table);
-        article.add(scrollPane);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+
 
         ChartPanel graph = new ChartPanel(DataSet);
+        article.add(scrollPane);
+
+        int tableScrollIncrement = scrollPane.getVerticalScrollBar().getUnitIncrement();
+        int graphScrollIncrement = 10;
 
 
         //----FOOTER---------------------
@@ -278,6 +302,24 @@ public class MyFrame extends JFrame {
 
             table.repaint();
             table.getTableHeader().repaint();
+        });
+
+        toggleTable.addActionListener(x -> {
+            toggleTable.setSelected(true);
+            toggleGraph.setSelected(false);
+            if (table.getParent() != scrollPane) {
+                scrollPane.setViewportView(table);
+                scrollPane.getVerticalScrollBar().setUnitIncrement(tableScrollIncrement);
+            }
+        });
+
+        toggleGraph.addActionListener(x -> {
+            toggleTable.setSelected(false);
+            toggleGraph.setSelected(true);
+            if (graph.getParent() != scrollPane) {
+                scrollPane.setViewportView(graph);
+                scrollPane.getVerticalScrollBar().setUnitIncrement(graphScrollIncrement);
+            }
         });
     }
 

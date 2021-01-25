@@ -2,9 +2,6 @@ package app.main;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -13,6 +10,8 @@ public class ChartPanel extends JPanel {
     private Integer[] values;
 
     private String[] names;
+
+    private int barWidth = 30;
 
     public ChartPanel(Integer[] v, String[] n) {
         names = n;
@@ -38,56 +37,40 @@ public class ChartPanel extends JPanel {
 
         Dimension d = getSize();
         int clientWidth = d.width;
-        int barWidth = 30;
 
-        Font labelFont = new Font("SansSerif", Font.PLAIN, 10);
+
+        Font labelFont = new Font("Calibri", Font.PLAIN, 20);
         FontMetrics labelFontMetrics = g.getFontMetrics(labelFont);
 
         int leftBarStart = 0;
         if (maxValue == 0)
             return;
         double scale = clientWidth / maxValue;
-        int leftLabelMargin = 30;
+        int leftLabelMargin = 10;
         g.setFont(labelFont);
 
         int valueX = leftBarStart;
         for (int i = 0; i < values.length; i++) {
-            int valueY = i * (barWidth + 1);
+            int valueY = i * (barWidth);
             int height = (int) (values[i] * scale);
 
-
-            g.setColor(Color.red);
-            g.fillRect(valueX, valueY, height, barWidth);
             g.setColor(Color.black);
+            g.drawLine(0, i * barWidth, clientWidth, i * barWidth);
+            g.setColor(new Color(0, 0, 255, 100));
+            g.fillRect(valueX, valueY, height, barWidth);
+            g.setColor(new Color(0, 0, 200, 200));
             g.drawRect(valueX, valueY, height, barWidth);
-            int labelWidth = labelFontMetrics.getHeight();
-            int y = i * barWidth + (barWidth + labelWidth) / 2;
-            g.drawString(names[i], leftLabelMargin, y);
+            g.setColor(Color.black);
+
+            int labelHeight = labelFontMetrics.getHeight();
+            int y = i * barWidth + (barWidth + 10) / 2;
+            g.drawString(names[i].replaceAll("_", " "), leftLabelMargin, y);
         }
     }
 
-    public static void main(String[] argv) {
-        JFrame f = new JFrame();
-        f.setSize(400, 300);
-        Integer[] values = new Integer[3];
-        String[] names = new String[3];
-        values[0] = 1;
-        names[0] = "Item 1";
-
-        values[1] = 2;
-        names[1] = "Item 2";
-
-        values[2] = 4;
-        names[2] = "Item 3";
-
-        f.getContentPane().add(new ChartPanel(values, names));
-
-        WindowListener wndCloser = new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-                System.exit(0);
-            }
-        };
-        f.addWindowListener(wndCloser);
-        f.setVisible(true);
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(getWidth(), values.length * barWidth);
     }
+
 }
