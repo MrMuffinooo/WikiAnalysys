@@ -81,7 +81,7 @@ public class DataImporter {
                 String key = (String)element.getKey();
                 if (key.endsWith("wiki")) {
                     key = key.replaceAll("wiki$", "");
-                    System.out.println(key);
+                    //System.out.println(key);
                     if (EnumUtils.isValidEnum(Domain.class, key) && !key.contains("_") && !key.contains("commons") && !key.contains("new") && !key.contains("skr")) { // skr nie dziala (bo arabskie?)
                         Map value = (Map) element.getValue();
                         names.put(key, (String) value.get("title"));
@@ -132,7 +132,7 @@ public class DataImporter {
     }
 
     //Zwraca wyswietlenia artykulu we wszystkich domenach, w zakresie dat.
-    public Map importViewsByDomain(Domain domain, String article, LocalDate date, LocalDate date2) { //domena, nazwa artykulu w domenie i zakres dat wyswietlen
+    public Map importViewsByDomainDays(Domain domain, String article, LocalDate date, LocalDate date2) { //domena, nazwa artykulu w domenie i zakres dat wyswietlen
         if (date.isAfter(date2))
             return null;
         Map names = importNames(domain, article);
@@ -143,6 +143,19 @@ public class DataImporter {
         }
         return viewsByDomain; //Mapa przyporzadkowuje domenom listy wyswietlen artykulu.
     }
+    public Map importViewsByDomain(Domain domain, String article, LocalDate date, LocalDate date2) {
+        if (date.isAfter(date2))
+            return null;
+        Map viewsByDomain = this.importViewsByDomainDays(domain, article, date, date2);
+        Map<String, Integer> viewsByDomainSum = new LinkedHashMap<>();
+        for (Object x : viewsByDomain.entrySet()) {
+            Map.Entry y = (Map.Entry) x;
+            List<Integer> value = (List) y.getValue();
+            viewsByDomainSum.put((String) y.getKey(), value.stream().mapToInt(Integer::intValue).sum());
+        }
+        return viewsByDomainSum;
+    }
+
     //Dla jednego dnia tylko:
     public Map importViewsByDomain(Domain domain, String article, LocalDate date) {
         return this.importViewsByDomain(domain, article, date, date);
@@ -214,9 +227,14 @@ public class DataImporter {
         /*Map names = test.importNames(Domain.en, "Star_Wars");
         System.out.println(names);*/
 
-        Map views = test.importViewsByDomain(Domain.en, "Main_Page", LocalDate.of(2020,12,12), LocalDate.of(2020,12,20));
+        Map views = test.importViewsByDomain(Domain.pl, "Polska", LocalDate.of(2020,12,12), LocalDate.of(2020,12,20));
         //Map names = test.importNames(Domain.en, "Star_Wars");
         for (Object x : views.entrySet()) {
+            Map.Entry y = (Map.Entry) x;
+            System.out.println(y.getKey() + " : " + y.getValue());
+        }
+        Map views2 = test.importViewsByDomainDays(Domain.pl, "Polska", LocalDate.of(2020,12,12), LocalDate.of(2020,12,20));
+        for (Object x : views2.entrySet()) {
             Map.Entry y = (Map.Entry) x;
             System.out.println(y.getKey() + " : " + y.getValue());
         }
