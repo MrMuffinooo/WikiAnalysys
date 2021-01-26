@@ -9,7 +9,6 @@ import org.apache.batik.swing.JSVGCanvas;
 import org.apache.batik.util.XMLResourceDescriptor;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.events.EventListener;
 import org.w3c.dom.events.EventTarget;
 import org.w3c.dom.svg.SVGDocument;
 import org.w3c.dom.svg.SVGStylable;
@@ -143,14 +142,26 @@ public class SVGMap {
     private void addCountryName(MapRecord country){
         Element text = svgDocument.getElementById(country.getId()+"T");
         EventTarget target = (EventTarget) text;
-        target.addEventListener("hover",
-                (EventListener) evt -> {
+        target.addEventListener("mouseover",
+                evt -> {
                     Element element = (Element) evt.getCurrentTarget();
                     if (element.getTextContent().equals(country.getCountryName()))
-                        element.setTextContent(country.getCountryName());
-                    else
                         element.setTextContent(country.getNumberOfViews().toString());
-                }, true);
+                    else
+                        element.setTextContent(country.getCountryName());
+
+                    jsvgCanvas.getCanvasGraphicsNode().fireGraphicsNodeChangeCompleted();
+                }, false);
+        target.addEventListener("mouseout",
+                evt -> {
+                    Element element = (Element) evt.getCurrentTarget();
+                    if (element.getTextContent().equals(country.getCountryName()))
+                        element.setTextContent(country.getNumberOfViews().toString());
+                    else
+                        element.setTextContent(country.getCountryName());
+
+                    jsvgCanvas.getCanvasGraphicsNode().fireGraphicsNodeChangeCompleted();
+                }, false);
     }
 
 
@@ -185,7 +196,7 @@ public class SVGMap {
     private void saveMap(String filename){
         try (OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(filename+".svg"), "UTF-8")){
             SVGGraphics2D graphics2D = new SVGGraphics2D(svgDocument);
-            graphics2D.stream(svgDocument.getDocumentElement(),out, false, true);
+            graphics2D.stream(svgDocument.getDocumentElement(), out, false, true);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (UnsupportedEncodingException e) {
@@ -201,8 +212,8 @@ public class SVGMap {
      * @return JComponent
      */
     public JSVGCanvas getSvgCanvas() {
+        jsvgCanvas.setDocumentState(JSVGCanvas.ALWAYS_DYNAMIC);
         prepareMap();
-        jsvgCanvas.setDocumentState(JSVGCanvas.ALWAYS_INTERACTIVE);
         jsvgCanvas.setSVGDocument(svgDocument);
         jsvgCanvas.setEnableRotateInteractor(false);
         return jsvgCanvas;
