@@ -296,8 +296,10 @@ public class MyFrame extends JFrame {
                     table.getColumnModel().getColumn(1).setHeaderValue("Domain");
                     graph.setMap(DataSet);
                     showMapButt.setEnabled(true);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
+                } catch (NullPointerException ex) {
+                    t1.setText("Incorrect article or domain");
+                    t1.requestFocus();
+                    return;
                 }
                 if (dateS.isEqual(dateE)) {
                     naglowek.setText("Most popular domains for " + term.replaceAll("_", " ") + " in");
