@@ -386,6 +386,11 @@ public class MyFrame extends JFrame {
                     } catch (URISyntaxException ex) {
                         ex.printStackTrace();
                     }
+                } else if (col == 0 && table.getColumnModel().getColumn(1).getHeaderValue().equals("Article")) {
+                    String s = TableModel.getValueAt(row, 1).toString();
+                    viewNav.setSelectedIndex(1);
+                    t1.setText(s);
+                    searchButton.doClick();
                 }
             }
         });
@@ -394,7 +399,7 @@ public class MyFrame extends JFrame {
             @Override
             public void mouseMoved(MouseEvent e) {
                 int col = table.columnAtPoint(new Point(e.getX(), e.getY()));
-                if (col == 1 && table.getColumnModel().getColumn(1).getHeaderValue().equals("Article")) {
+                if ((col == 1 || col == 0) && table.getColumnModel().getColumn(1).getHeaderValue().equals("Article")) {
                     table.setCursor(new Cursor(Cursor.HAND_CURSOR));
                 } else {
                     table.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
