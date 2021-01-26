@@ -4,9 +4,12 @@ import org.apache.commons.lang3.EnumUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -73,7 +76,7 @@ public class DataImporter {
     //Zwraca nazwy artukulow we wszystkich domenach.
     public Map importNames(Domain domain, String article) throws Exception { //domena i nazwa artykulu w tej domenie
         String jsonStr = importData("https://www.wikidata.org/w/api.php?action=wbgetentities&sites=" + domain +
-                "wiki&titles=" + article + "&languages=en&format=json");
+                "wiki&titles=" + URLEncoder.encode(article, StandardCharsets.UTF_8) + "&languages=en&format=json");
         if (jsonStr == null) {
             throw new Exception("Niepoprawny link dla danych wejsciowych.");
         }
@@ -105,7 +108,7 @@ public class DataImporter {
         String dateStr = date.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String dateStr2 = date2.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String jsonStr = importData("https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/" + domain +
-                ".wikipedia.org/all-access/all-agents/" + article + "/daily/" + dateStr + "/" + dateStr2);
+                ".wikipedia.org/all-access/all-agents/" + URLEncoder.encode(article, StandardCharsets.UTF_8) + "/daily/" + dateStr + "/" + dateStr2);
         if (jsonStr == null) {
             return new ArrayList(Collections.nCopies((int)days, 0));
         }
@@ -175,14 +178,14 @@ public class DataImporter {
         try {
             url = new URL ( line );
             } catch ( MalformedURLException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             return null;
         }
         HttpURLConnection connection = null;
         try {
             connection = ( HttpURLConnection ) url.openConnection();
             } catch ( Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             return null;
             }
         return connection ;
@@ -194,7 +197,7 @@ public class DataImporter {
         try {
             inStream = connection.getInputStream();
             } catch ( Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             return null;
             }
         Scanner in = new Scanner( inStream, "UTF-8");
@@ -227,7 +230,7 @@ public class DataImporter {
         /*Map names = test.importNames(Domain.en, "Star_Wars");
         System.out.println(names);*/
 
-        try {
+        /*try {
             Map views = test.importViewsByDomain(Domain.pl, "Polska", LocalDate.of(2020, 12, 12), LocalDate.of(2020, 12, 20));
             //Map names = test.importNames(Domain.en, "Star_Wars");
             for (Object x : views.entrySet()) {
@@ -241,7 +244,7 @@ public class DataImporter {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
         /*for (Object x : names.entrySet()) {
             Map.Entry y = (Map.Entry) x;
             System.out.println(test.getLink(Domain.valueOf((String)y.getKey()), (String) y.getValue()));
@@ -252,6 +255,8 @@ public class DataImporter {
 
         /*List x = test.importViews(Domain.en, "Main_Page", LocalDate.of(2020,12,12), LocalDate.of(2020, 12, 15));
         System.out.println(x);*/
+        System.out.println(test.importData("https://www.wikidata.org/w/api.php?action=wbgetentities&sites=plwiki&titles=" +
+                URLEncoder.encode("Świdnica", StandardCharsets.UTF_8) + "&languages=en&format=json"));
     }
 
 }
