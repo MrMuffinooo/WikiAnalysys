@@ -54,18 +54,13 @@ public class DataImporter {
             throw new Exception("Niepoprawny link dla danych wejsciowych.");
         }
         Map<String, Integer> articles = new LinkedHashMap<>();
-        try {
-            Map<String,Object> result = new ObjectMapper().readValue(jsonStr, HashMap.class);
-            ArrayList items = (ArrayList) result.get("items");
-            Map deeper = (Map) items.get(0);
-            ArrayList articles_raw = (ArrayList) deeper.get("articles");
-            for (Object x : articles_raw) {
-                LinkedHashMap element = (LinkedHashMap) x;
-                articles.put((String) element.get("article"), (Integer) element.get("views"));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+        Map<String,Object> result = new ObjectMapper().readValue(jsonStr, HashMap.class);
+        ArrayList items = (ArrayList) result.get("items");
+        Map deeper = (Map) items.get(0);
+        ArrayList articles_raw = (ArrayList) deeper.get("articles");
+        for (Object x : articles_raw) {
+            LinkedHashMap element = (LinkedHashMap) x;
+            articles.put((String) element.get("article"), (Integer) element.get("views"));
         }
         return articles; //Mapa topki, przyporzadkowuje artykulom wyswietlenia.
     }
@@ -83,27 +78,21 @@ public class DataImporter {
             throw new Exception("Niepoprawny link dla danych wejsciowych.");
         }
         Map<String, String> names = new LinkedHashMap<>();
-        try {
-            Map<String,Object> result = new ObjectMapper().readValue(jsonStr, HashMap.class);
-            Map deeper = (Map) result.get("entities");
-            Map.Entry deep = (Map.Entry) deeper.entrySet().iterator().next();
-            deeper = (Map) deep.getValue();
-            deeper = (Map) deeper.get("sitelinks");
-            for (Object x : deeper.entrySet()) {
-                Map.Entry element = (Map.Entry) x;
-                String key = (String)element.getKey();
-                if (key.endsWith("wiki")) {
-                    key = key.replaceAll("wiki$", "");
-                    //System.out.println(key);
-                    if (EnumUtils.isValidEnum(Domain.class, key)) {
-                        Map value = (Map) element.getValue();
-                        names.put(key, (String) value.get("title"));
-                    }
+        Map<String,Object> result = new ObjectMapper().readValue(jsonStr, HashMap.class);
+        Map deeper = (Map) result.get("entities");
+        Map.Entry deep = (Map.Entry) deeper.entrySet().iterator().next();
+        deeper = (Map) deep.getValue();
+        deeper = (Map) deeper.get("sitelinks");
+        for (Object x : deeper.entrySet()) {
+            Map.Entry element = (Map.Entry) x;
+            String key = (String)element.getKey();
+            if (key.endsWith("wiki")) {
+                key = key.replaceAll("wiki$", "");
+                if (EnumUtils.isValidEnum(Domain.class, key)) {
+                    Map value = (Map) element.getValue();
+                    names.put(key, (String) value.get("title"));
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
         }
         return names; //Mapa przyporzadkowuje domenom nazwy artykulu.
     }
@@ -121,22 +110,17 @@ public class DataImporter {
             return new ArrayList(Collections.nCopies((int)days, 0));
         }
         List<Integer> views = new ArrayList<>();
-        try {
-            Map<String,Object> result = new ObjectMapper().readValue(jsonStr, HashMap.class);
-            ArrayList items = (ArrayList) result.get("items");
-            for (int i = 0; i < items.size(); i++) {
-                Map deeper = (Map) items.get(i);
-                String time = (String) deeper.get("timestamp");
-                while (!time.equals(date.format(DateTimeFormatter.ofPattern("yyyyMMdd00")))) {
-                    date = date.plusDays(1);
-                    views.add(0);
-                }
-                views.add((int) deeper.get("views"));
+        Map<String,Object> result = new ObjectMapper().readValue(jsonStr, HashMap.class);
+        ArrayList items = (ArrayList) result.get("items");
+        for (int i = 0; i < items.size(); i++) {
+            Map deeper = (Map) items.get(i);
+            String time = (String) deeper.get("timestamp");
+            while (!time.equals(date.format(DateTimeFormatter.ofPattern("yyyyMMdd00")))) {
                 date = date.plusDays(1);
+                views.add(0);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            views.add((int) deeper.get("views"));
+            date = date.plusDays(1);
         }
         return views; //lista wyswietlen artykulu
     }
