@@ -296,7 +296,7 @@ public class MyFrame extends JFrame {
                     table.getColumnModel().getColumn(1).setHeaderValue("Domain");
                     graph.setMap(DataSet);
                     showMapButt.setEnabled(true);
-                } catch (NullPointerException ex) {
+                } catch (Exception ex) {
                     t1.setText("Incorrect article or domain");
                     t1.requestFocus();
                     return;
@@ -310,7 +310,14 @@ public class MyFrame extends JFrame {
                 }
             } else {
                 DataSet.clear();
-                List<Integer> wyswietlenia = new DataImporter().importViews(dd, term, dateS, dateE);
+                List<Integer> wyswietlenia = null;
+                try {
+                    wyswietlenia = new DataImporter().importViews(dd, term, dateS, dateE);
+                } catch (Exception ex) {
+                    t1.setText("Incorrect article or domain");
+                    t1.requestFocus();
+                    return;
+                }
                 for (int i = 0; i < wyswietlenia.size(); i++) {
                     DataSet.put(dateS.plusDays(i).format(DateTimeFormatter.ofPattern("dd-MM-yyyy")), wyswietlenia.get(i));
                 }
