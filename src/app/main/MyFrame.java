@@ -265,6 +265,8 @@ public class MyFrame extends JFrame {
                 return;
             }
 
+            DataSet.clear();
+
             if (s == 0) {
                 try {
                     DataSet = new DataImporter().importTop(dd, dateS);
@@ -284,7 +286,6 @@ public class MyFrame extends JFrame {
                     return;
                 }
                 try {
-                    DataSet.clear();
                     Map<String, Integer> tempMap = new DataImporter().importViewsByDomain(dd, term, dateS, dateE);
                     tempMap.values().removeAll(Collections.singleton(null));
                     tempMap.entrySet()
@@ -297,8 +298,9 @@ public class MyFrame extends JFrame {
                     graph.setMap(DataSet);
                     showMapButt.setEnabled(true);
                 } catch (Exception ex) {
-                    t1.setText("Incorrect article or domain");
                     t1.requestFocus();
+                    t1.setText("Incorrect article or domain");
+                    t1.setForeground(Color.BLACK);
                     return;
                 }
                 if (dateS.isEqual(dateE)) {
@@ -309,13 +311,14 @@ public class MyFrame extends JFrame {
                     naglowek2.setText(dateS.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + " and " + dateE.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
                 }
             } else {
-                DataSet.clear();
+
                 List<Integer> wyswietlenia = null;
                 try {
                     wyswietlenia = new DataImporter().importViews(dd, term, dateS, dateE);
                 } catch (Exception ex) {
-                    t1.setText("Incorrect article or domain");
                     t1.requestFocus();
+                    t1.setText("Incorrect article or domain");
+                    t1.setForeground(Color.BLACK);
                     return;
                 }
                 for (int i = 0; i < wyswietlenia.size(); i++) {
@@ -389,6 +392,7 @@ public class MyFrame extends JFrame {
                 } else if (col == 0 && table.getColumnModel().getColumn(1).getHeaderValue().equals("Article")) {
                     String s = TableModel.getValueAt(row, 1).toString();
                     viewNav.setSelectedIndex(1);
+                    t1.requestFocus();
                     t1.setText(s);
                     searchButton.doClick();
                 }
