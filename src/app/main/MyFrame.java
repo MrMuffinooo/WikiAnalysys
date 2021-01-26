@@ -10,11 +10,17 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 
 public class MyFrame extends JFrame {
@@ -150,6 +156,7 @@ public class MyFrame extends JFrame {
             mapa.add(svgMap.getSvgCanvas());
             mapa.setVisible(true);
             mapa.setSize(1010, 666);
+            mapa.setIconImage(new ImageIcon("resources/logo.png").getImage());
         });
 
 
@@ -175,7 +182,6 @@ public class MyFrame extends JFrame {
                     t1.setEnabled(true);
                     dateStart.setEnabled(true);
                     dateEnd.setEnabled(true);
-                    showMapButt.setEnabled(true);
                 } else {
                     t1.setEnabled(true);
                     dateStart.setEnabled(true);
@@ -226,7 +232,7 @@ public class MyFrame extends JFrame {
         ChartPanel graph = new ChartPanel(DataSet);
         article.add(scrollPane);
 
-        int tableScrollIncrement = scrollPane.getVerticalScrollBar().getUnitIncrement();
+        int tableScrollIncrement = 10;
         int graphScrollIncrement = 10;
 
 
@@ -270,7 +276,7 @@ public class MyFrame extends JFrame {
                 }
 
                 naglowek.setText("Most popular articles in ");
-                naglowek2.setText(dateS.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + " " + dd.toString());
+                naglowek2.setText(dateS.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "  " + dd.toString());
 
             } else if (s == 1) {
                 if (term.isEmpty() || term.equals("Search")) {
@@ -286,9 +292,10 @@ public class MyFrame extends JFrame {
                             .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                             .forEachOrdered(x -> DataSet.put(x.getKey(), x.getValue()));
 
-                    TableModel.setMap(DataSet); //TODO cos nie dziala z pl znakami
+                    TableModel.setMap(DataSet);
                     table.getColumnModel().getColumn(1).setHeaderValue("Domain");
                     graph.setMap(DataSet);
+                    showMapButt.setEnabled(true);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
@@ -298,6 +305,23 @@ public class MyFrame extends JFrame {
                 } else {
                     naglowek.setText("Most popular domains for " + term.replaceAll("_", " ") + " between ");
                     naglowek2.setText(dateS.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + " and " + dateE.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+                }
+            } else {
+                DataSet.clear();
+                List<Integer> wyswietlenia = new DataImporter().importViews(dd, term, dateS, dateE);
+                for (int i = 0; i < wyswietlenia.size(); i++) {
+                    DataSet.put(dateS.plusDays(i).format(DateTimeFormatter.ofPattern("dd-MM-yyyy")), wyswietlenia.get(i));
+                }
+                TableModel.setMap(DataSet);
+                table.getColumnModel().getColumn(1).setHeaderValue("Date");
+                graph.setMap(DataSet);
+
+                if (dateS.isEqual(dateE)) {
+                    naglowek.setText("Views for " + term.replaceAll("_", " ") + " in");
+                    naglowek2.setText(dateS.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "  " + dd.toString());
+                } else {
+                    naglowek.setText("Views for " + term.replaceAll("_", " ") + " between ");
+                    naglowek2.setText(dateS.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + " and " + dateE.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "  " + dd.toString());
                 }
             }
 
@@ -324,32 +348,55 @@ public class MyFrame extends JFrame {
                 scrollPane.getVerticalScrollBar().setUnitIncrement(graphScrollIncrement);
             }
         });
+
+
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int row = table.rowAtPoint(new Point(e.getX(), e.getY()));
+                int col = table.columnAtPoint(new Point(e.getX(), e.getY()));
+
+                if (col == 1 && table.getColumnModel().getColumn(1).getHeaderValue().equals("Article")) {
+                    String article = table.getModel().getValueAt(row, col).toString().replaceAll(" ", "_");
+                    String domainName = domainButt.getText();
+
+                    DataImporter.Domain dd;
+                    try {
+                        dd = DataImporter.Domain.valueOf(domainName);
+                    } catch (Exception ex) {
+                        domainButt.setText("");
+                        domainButt.requestFocus();
+                        return;
+                    }
+                    String url = new DataImporter().getLink(dd, article);
+
+                    try {
+                        Desktop.getDesktop().browse(new URI(url));
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    } catch (URISyntaxException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        table.addMouseMotionListener(new MouseAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                int col = table.columnAtPoint(new Point(e.getX(), e.getY()));
+                if (col == 1 && table.getColumnModel().getColumn(1).getHeaderValue().equals("Article")) {
+                    table.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                } else {
+                    table.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                table.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            }
+        });
     }
-
-/*
-    public void setData(Map<String, Integer> d) {
-        if (d.isEmpty())
-            return;
-
-        LinkedHashMap<String, Integer> sortedMap = new LinkedHashMap();
-
-        d.values().removeAll(Collections.singleton(null));
-        d.entrySet()
-                .stream()
-                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-                .forEachOrdered(x -> sortedMap.put(x.getKey(), x.getValue()));
-        Integer i = 0;
-
-        /*for (Map.Entry<String, Integer> entry : sortedMap.entrySet()) {
-            data[i][0] = String.valueOf(i + 1);
-            data[i][1] = entry.getKey().replaceAll("_", " ");
-            data[i][2] = entry.getValue().toString();
-            i++;
-            if (i == 1001) {
-                break;}
-
-
-
-    }*/
 
 }
