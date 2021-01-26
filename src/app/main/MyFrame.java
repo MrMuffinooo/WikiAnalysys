@@ -10,7 +10,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -335,7 +340,59 @@ public class MyFrame extends JFrame {
                 scrollPane.getVerticalScrollBar().setUnitIncrement(graphScrollIncrement);
             }
         });
+
+
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int row = table.rowAtPoint(new Point(e.getX(), e.getY()));
+                int col = table.columnAtPoint(new Point(e.getX(), e.getY()));
+
+                if (col == 1 && table.getColumnModel().getColumn(1).getHeaderValue().equals("Article")) {
+                    String article = table.getModel().getValueAt(row, col).toString().replaceAll(" ", "_");
+                    String domainName = domainButt.getText();
+
+                    DataImporter.Domain dd;
+                    try {
+                        dd = DataImporter.Domain.valueOf(domainName);
+                    } catch (Exception ex) {
+                        domainButt.setText("");
+                        domainButt.requestFocus();
+                        return;
+                    }
+                    String url = new DataImporter().getLink(dd, article);
+
+                    try {
+                        Desktop.getDesktop().browse(new URI(url));
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    } catch (URISyntaxException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        table.addMouseMotionListener(new MouseAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                int col = table.columnAtPoint(new Point(e.getX(), e.getY()));
+                if (col == 1 && table.getColumnModel().getColumn(1).getHeaderValue().equals("Article")) {
+                    table.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                } else {
+                    table.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                table.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            }
+        });
     }
+
+
+
 
 /*
     public void setData(Map<String, Integer> d) {
