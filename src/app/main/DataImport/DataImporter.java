@@ -50,6 +50,9 @@ public class DataImporter {
 
         String jsonStr = importData("https://wikimedia.org/api/rest_v1/metrics/pageviews/top/" + domain +
                 ".wikipedia/all-access/" + dateStr);
+        if (jsonStr == null) {
+            throw new Exception("Niepoprawny link dla danych wejsciowych.");
+        }
         Map<String, Integer> articles = new LinkedHashMap<>();
         try {
             Map<String,Object> result = new ObjectMapper().readValue(jsonStr, HashMap.class);
@@ -62,6 +65,7 @@ public class DataImporter {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
         return articles; //Mapa topki, przyporzadkowuje artykulom wyswietlenia.
     }
@@ -72,9 +76,12 @@ public class DataImporter {
     }
 
     //Zwraca nazwy artukulow we wszystkich domenach.
-    public Map importNames(Domain domain, String article) { //domena i nazwa artykulu w tej domenie
+    public Map importNames(Domain domain, String article) throws Exception { //domena i nazwa artykulu w tej domenie
         String jsonStr = importData("https://www.wikidata.org/w/api.php?action=wbgetentities&sites=" + domain +
                 "wiki&titles=" + article + "&languages=en&format=json");
+        if (jsonStr == null) {
+            throw new Exception("Niepoprawny link dla danych wejsciowych.");
+        }
         Map<String, String> names = new LinkedHashMap<>();
         try {
             Map<String,Object> result = new ObjectMapper().readValue(jsonStr, HashMap.class);
@@ -96,14 +103,15 @@ public class DataImporter {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
         return names; //Mapa przyporzadkowuje domenom nazwy artykulu.
     }
 
     //Zwraca wyswietlenia pojedynczego artykulu dla zakresu dat.
-    public List<Integer> importViews(Domain domain, String article, LocalDate date, LocalDate date2) { //domena, nazwa artykulu w domenie i zakres dat wyswietlen
+    public List<Integer> importViews(Domain domain, String article, LocalDate date, LocalDate date2) throws Exception { //domena, nazwa artykulu w domenie i zakres dat wyswietlen
         if (date.isAfter(date2))
-            return Collections.singletonList(-1);
+            throw new Exception("Niepoprawny zakres dat.");
         long days = DAYS.between(date, date2);
         String dateStr = date.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String dateStr2 = date2.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
@@ -133,14 +141,14 @@ public class DataImporter {
         return views; //lista wyswietlen artykulu
     }
     //Dla jednego dnia tylko:
-    public List<Integer> importViews(Domain domain, String article, LocalDate date) {
+    public List<Integer> importViews(Domain domain, String article, LocalDate date) throws Exception {
         return this.importViews(domain, article, date, date);
     }
 
     //Zwraca wyswietlenia artykulu we wszystkich domenach, w zakresie dat.
-    public Map importViewsByDomainDays(Domain domain, String article, LocalDate date, LocalDate date2) { //domena, nazwa artykulu w domenie i zakres dat wyswietlen
+    public Map importViewsByDomainDays(Domain domain, String article, LocalDate date, LocalDate date2) throws Exception { //domena, nazwa artykulu w domenie i zakres dat wyswietlen
         if (date.isAfter(date2))
-            return null;
+            throw new Exception("Niepoprawny zakres dat.");
         Map names = importNames(domain, article);
         Map<String, List> viewsByDomain = new LinkedHashMap<>();
         for (Object x : names.entrySet()) {
@@ -151,9 +159,9 @@ public class DataImporter {
     }
 
     //Zwraca sumaryczne wyswietlenia artykulu we wszystkich domenach, w zakresie dat.
-    public Map importViewsByDomain(Domain domain, String article, LocalDate date, LocalDate date2) { //domena, nazwa artykulu w domenie i zakres dat wyswietlen
+    public Map importViewsByDomain(Domain domain, String article, LocalDate date, LocalDate date2) throws Exception { //domena, nazwa artykulu w domenie i zakres dat wyswietlen
         if (date.isAfter(date2))
-            return null;
+            throw new Exception("Niepoprawny zakres dat.");
         Map viewsByDomain = this.importViewsByDomainDays(domain, article, date, date2);
         Map<String, Integer> viewsByDomainSum = new LinkedHashMap<>();
         for (Object x : viewsByDomain.entrySet()) {
@@ -165,7 +173,7 @@ public class DataImporter {
     }
 
     //Dla jednego dnia tylko:
-    public Map importViewsByDomain(Domain domain, String article, LocalDate date) {
+    public Map importViewsByDomain(Domain domain, String article, LocalDate date) throws Exception {
         return this.importViewsByDomain(domain, article, date, date);
     }
 
@@ -190,7 +198,7 @@ public class DataImporter {
         try {
             connection = ( HttpURLConnection ) url.openConnection();
             } catch ( Exception e) {
-            e.printStackTrace ();
+            e.printStackTrace();
             return null;
             }
         return connection ;
@@ -235,16 +243,20 @@ public class DataImporter {
         /*Map names = test.importNames(Domain.en, "Star_Wars");
         System.out.println(names);*/
 
-        Map views = test.importViewsByDomain(Domain.pl, "Polska", LocalDate.of(2020,12,12), LocalDate.of(2020,12,20));
-        //Map names = test.importNames(Domain.en, "Star_Wars");
-        for (Object x : views.entrySet()) {
-            Map.Entry y = (Map.Entry) x;
-            System.out.println(y.getKey() + " : " + y.getValue());
-        }
-        Map views2 = test.importViewsByDomainDays(Domain.pl, "Polska", LocalDate.of(2020,12,12), LocalDate.of(2020,12,20));
-        for (Object x : views2.entrySet()) {
-            Map.Entry y = (Map.Entry) x;
-            System.out.println(y.getKey() + " : " + y.getValue());
+        try {
+            Map views = test.importViewsByDomain(Domain.pl, "Polska", LocalDate.of(2020, 12, 12), LocalDate.of(2020, 12, 20));
+            //Map names = test.importNames(Domain.en, "Star_Wars");
+            for (Object x : views.entrySet()) {
+                Map.Entry y = (Map.Entry) x;
+                System.out.println(y.getKey() + " : " + y.getValue());
+            }
+            Map views2 = test.importViewsByDomainDays(Domain.pl, "Polska", LocalDate.of(2020, 12, 12), LocalDate.of(2020, 12, 20));
+            for (Object x : views2.entrySet()) {
+                Map.Entry y = (Map.Entry) x;
+                System.out.println(y.getKey() + " : " + y.getValue());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         /*for (Object x : names.entrySet()) {
             Map.Entry y = (Map.Entry) x;
