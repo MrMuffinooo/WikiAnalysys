@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 
 public class MyFrame extends JFrame {
@@ -286,7 +287,7 @@ public class MyFrame extends JFrame {
                             .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                             .forEachOrdered(x -> DataSet.put(x.getKey(), x.getValue()));
 
-                    TableModel.setMap(DataSet); //TODO cos nie dziala z pl znakami
+                    TableModel.setMap(DataSet);
                     table.getColumnModel().getColumn(1).setHeaderValue("Domain");
                     graph.setMap(DataSet);
                     showMapButt.setEnabled(true);
@@ -300,6 +301,15 @@ public class MyFrame extends JFrame {
                     naglowek.setText("Most popular domains for " + term.replaceAll("_", " ") + " between ");
                     naglowek2.setText(dateS.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + " and " + dateE.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
                 }
+            } else {
+                DataSet.clear();
+                List<Integer> wyswietlenia = new DataImporter().importViews(dd, term, dateS, dateE);
+                for (int i = 0; i < wyswietlenia.size(); i++) {
+                    DataSet.put(dateS.plusDays(i).format(DateTimeFormatter.ofPattern("dd-MM-yyyy")), wyswietlenia.get(i));
+                }
+                TableModel.setMap(DataSet);
+                table.getColumnModel().getColumn(1).setHeaderValue("Date");
+                graph.setMap(DataSet);
             }
 
             //table.repaint();
