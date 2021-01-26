@@ -80,6 +80,7 @@ public class SVGMap {
 
             Element scale = createRect();
             root.appendChild(scale);
+
             Element minText = createText("min","8", "9", min.toString());
             Element maxText = createText("max","190", "9", max.toString());
             root.appendChild(minText);
@@ -145,21 +146,13 @@ public class SVGMap {
         target.addEventListener("mouseover",
                 evt -> {
                     Element element = (Element) evt.getCurrentTarget();
-                    if (element.getTextContent().equals(country.getCountryName()))
-                        element.setTextContent(country.getNumberOfViews().toString());
-                    else
-                        element.setTextContent(country.getCountryName());
-
+                    element.setTextContent(country.getCountryName());
                     jsvgCanvas.getCanvasGraphicsNode().fireGraphicsNodeChangeCompleted();
                 }, false);
         target.addEventListener("mouseout",
                 evt -> {
                     Element element = (Element) evt.getCurrentTarget();
-                    if (element.getTextContent().equals(country.getCountryName()))
-                        element.setTextContent(country.getNumberOfViews().toString());
-                    else
-                        element.setTextContent(country.getCountryName());
-
+                    element.setTextContent(country.getNumberOfViews().toString());
                     jsvgCanvas.getCanvasGraphicsNode().fireGraphicsNodeChangeCompleted();
                 }, false);
     }
