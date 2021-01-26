@@ -150,6 +150,7 @@ public class MyFrame extends JFrame {
             mapa.add(svgMap.getSvgCanvas());
             mapa.setVisible(true);
             mapa.setSize(1010, 666);
+            mapa.setIconImage(new ImageIcon("resources/logo.png").getImage());
         });
 
 
@@ -175,7 +176,6 @@ public class MyFrame extends JFrame {
                     t1.setEnabled(true);
                     dateStart.setEnabled(true);
                     dateEnd.setEnabled(true);
-                    showMapButt.setEnabled(true);
                 } else {
                     t1.setEnabled(true);
                     dateStart.setEnabled(true);
@@ -289,6 +289,7 @@ public class MyFrame extends JFrame {
                     TableModel.setMap(DataSet); //TODO cos nie dziala z pl znakami
                     table.getColumnModel().getColumn(1).setHeaderValue("Domain");
                     graph.setMap(DataSet);
+                    showMapButt.setEnabled(true);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
