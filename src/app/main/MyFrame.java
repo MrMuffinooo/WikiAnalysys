@@ -232,7 +232,7 @@ public class MyFrame extends JFrame {
         ChartPanel graph = new ChartPanel(DataSet);
         article.add(scrollPane);
 
-        int tableScrollIncrement = scrollPane.getVerticalScrollBar().getUnitIncrement();
+        int tableScrollIncrement = 10;
         int graphScrollIncrement = 10;
 
 
@@ -276,7 +276,7 @@ public class MyFrame extends JFrame {
                 }
 
                 naglowek.setText("Most popular articles in ");
-                naglowek2.setText(dateS.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + " " + dd.toString());
+                naglowek2.setText(dateS.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "  " + dd.toString());
 
             } else if (s == 1) {
                 if (term.isEmpty() || term.equals("Search")) {
@@ -315,6 +315,14 @@ public class MyFrame extends JFrame {
                 TableModel.setMap(DataSet);
                 table.getColumnModel().getColumn(1).setHeaderValue("Date");
                 graph.setMap(DataSet);
+
+                if (dateS.isEqual(dateE)) {
+                    naglowek.setText("Views for " + term.replaceAll("_", " ") + " in");
+                    naglowek2.setText(dateS.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "  " + dd.toString());
+                } else {
+                    naglowek.setText("Views for " + term.replaceAll("_", " ") + " between ");
+                    naglowek2.setText(dateS.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + " and " + dateE.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) + "  " + dd.toString());
+                }
             }
 
             //table.repaint();
@@ -390,34 +398,5 @@ public class MyFrame extends JFrame {
             }
         });
     }
-
-
-
-
-/*
-    public void setData(Map<String, Integer> d) {
-        if (d.isEmpty())
-            return;
-
-        LinkedHashMap<String, Integer> sortedMap = new LinkedHashMap();
-
-        d.values().removeAll(Collections.singleton(null));
-        d.entrySet()
-                .stream()
-                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-                .forEachOrdered(x -> sortedMap.put(x.getKey(), x.getValue()));
-        Integer i = 0;
-
-        /*for (Map.Entry<String, Integer> entry : sortedMap.entrySet()) {
-            data[i][0] = String.valueOf(i + 1);
-            data[i][1] = entry.getKey().replaceAll("_", " ");
-            data[i][2] = entry.getValue().toString();
-            i++;
-            if (i == 1001) {
-                break;}
-
-
-
-    }*/
 
 }
